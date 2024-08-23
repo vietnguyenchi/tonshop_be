@@ -1,11 +1,13 @@
 -- CreateTable
 CREATE TABLE `User` (
     `id` VARCHAR(191) NOT NULL,
-    `telegramId` INTEGER NOT NULL,
-    `username` VARCHAR(191) NULL,
-    `firstName` VARCHAR(191) NULL,
-    `lastName` VARCHAR(191) NULL,
-    `photo_url` VARCHAR(191) NULL,
+    `telegramId` VARCHAR(191) NOT NULL,
+    `username` VARCHAR(191) NOT NULL,
+    `firstName` VARCHAR(191) NOT NULL,
+    `lastName` VARCHAR(191) NOT NULL,
+    `hash` VARCHAR(191) NOT NULL,
+    `authDate` DATETIME(3) NOT NULL,
+    `photoUrl` VARCHAR(191) NULL,
     `role` ENUM('uesr', 'admin') NOT NULL DEFAULT 'uesr',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,

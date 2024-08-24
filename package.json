@@ -28,6 +28,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.18.0",
+    "concurrently": "^8.2.2",
     "passport": "^0.7.0",
     "passport-telegram": "^1.0.0",
     "reflect-metadata": "^0.2.0",

@@ -5,9 +5,7 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get(
-    '/api/momo_callback/:chargeId/:chargeType/:chargeCode/:regAmount/:chargeAmount/:status/:requestId/:signature/:momoTransId/:result/:usdRate/:usdAmount',
-  )
+  @Get('/api/momo_callback')
   getHello(
     @Param() chargeId: string,
     chargeType: string,

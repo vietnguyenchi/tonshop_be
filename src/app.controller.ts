@@ -1,42 +1,38 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get(
-    '/api/momo_callback/:chargeId/:chargeType/:chargeCode/:regAmount/:chargeAmount/:status/:requestId/:signature/:momoTransId/:result/:usdRate/:usdAmount',
-  )
+  @Get('/api/momo_callback')
   getHello(
-    @Param() chargeId?: string,
-    chargeType?: string,
-    chargeCode?: string,
-    regAmount?: string,
-    chargeAmount?: string,
-    status?: string,
-    requestId?: string,
-    signature?: string,
-    momoTransId?: string,
-    result?: string,
-    usdRate?: string,
-    usdAmount?: string,
+    @Query('chargeId') chargeId: string,
+    @Query('chargeType') chargeType: string,
+    @Query('chargeCode') chargeCode: string,
+    @Query('regAmount') regAmount: string,
+    @Query('status') status: string,
+    @Query('chargeAmount') chargeAmount: string,
+    @Query('requestId') requestId: string,
+    @Query('signature') signature: string,
+    @Query('momoTransId') momoTransId: string,
+    @Query('result') result: string,
+    @Query('usdRate') usdRate: string,
+    @Query('usdAmount') usdAmount: string,
   ) {
-    const data = {
+    return this.appService.getHello({
       chargeId,
       chargeType,
       chargeCode,
       regAmount,
-      chargeAmount,
       status,
+      chargeAmount,
       requestId,
       signature,
       momoTransId,
       result,
       usdRate,
       usdAmount,
-    };
-
-    return this.appService.getHello(data);
+    });
   }
 }

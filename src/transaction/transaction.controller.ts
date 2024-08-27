@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 // import { TransactionService } from './transaction.service';
 import { TransactionGateway } from './transaction.gateway';
 
-@Controller('transaction')
+@Controller('')
 export class TransactionController {
   constructor(
     // private readonly transactionService: TransactionService,

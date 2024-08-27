@@ -6,8 +6,7 @@ export class TransactionGateway {
   @WebSocketServer()
   server: Server;
 
-  // Phương thức này sẽ gửi trạng thái giao dịch tới frontend
   notifyTransactionStatus(status: any) {
-    this.server.emit('transactionStatus', status); // 'transactionStatus' là sự kiện mà frontend sẽ lắng nghe
+    this.server.emit('transactionStatus', status);
   }
 }

@@ -6,7 +6,7 @@ import { TransactionGateway } from './transaction.gateway';
 export class TransactionController {
   constructor(
     // private readonly transactionService: TransactionService,
-    private readonly transactionGateway: TransactionGateway, // Inject Gateway
+    private readonly transactionGateway: TransactionGateway,
   ) {}
 
   @Get('api/momo_callback')

@@ -1,7 +1,12 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
-@WebSocketGateway({ cors: true }) // Bật CORS nếu cần thiết
+@WebSocketGateway({
+  cors: {
+    origin: 'https://172.29.208.1:5173',
+    methods: ['GET', 'POST'],
+  },
+})
 export class TransactionGateway {
   @WebSocketServer()
   server: Server;

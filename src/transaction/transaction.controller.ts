@@ -37,10 +37,11 @@ export class TransactionController {
       result,
       usdRate,
       usdAmount,
+      message: 'Transaction processed...',
     };
 
     this.transactionGateway.notifyTransactionStatus(transactionInfo);
 
-    return { message: 'Transaction processed', status };
+    return { message: 'Transaction processed', transactionInfo };
   }
 }

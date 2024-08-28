@@ -3,7 +3,7 @@ import { TransactionService } from './transaction.service';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { TransactionGateway } from './transaction.gateway';
 
-@Controller('transaction')
+@Controller('')
 export class TransactionController {
   constructor(
     private readonly transactionService: TransactionService,
@@ -15,12 +15,12 @@ export class TransactionController {
     return this.transactionService.transaction({ walletAddress, amount });
   }
 
-  @Post('create-bill')
+  @Post('transaction/create-bill')
   async createBill(@Body() createBillDto: CreateBillDto) {
     return this.transactionService.createBill(createBillDto);
   }
 
-  @Get('momo_callback')
+  @Get('api/momo_callback')
   handlePaymentCallback(
     @Query('chargeId') chargeId: string,
     @Query('chargeType') chargeType: string,

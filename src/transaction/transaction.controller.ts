@@ -1,10 +1,14 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateBillDto } from './dto/create-bill.dto';
+import { TransactionGateway } from './transaction.gateway';
 
 @Controller('transaction')
 export class TransactionController {
-  constructor(private readonly transactionService: TransactionService) {}
+  constructor(
+    private readonly transactionService: TransactionService,
+    private readonly transactionGateway: TransactionGateway,
+  ) {}
 
   @Post()
   async create(@Query() walletAddress: string, @Query() amount: number) {
@@ -16,7 +20,7 @@ export class TransactionController {
     return this.transactionService.createBill(createBillDto);
   }
 
-  @Get('callback')
+  @Get('momo_callback')
   handlePaymentCallback(
     @Query('chargeId') chargeId: string,
     @Query('chargeType') chargeType: string,
@@ -26,5 +30,18 @@ export class TransactionController {
     @Query('status') status: string,
     @Query('requestId') requestId: string,
     @Query('signature') signature: string,
-  ) {}
+  ) {
+    this.transactionGateway.notifyTransactionStatus({
+      chargeId,
+      chargeType,
+      chargeCode,
+      regAmount,
+      chargeAmount,
+      status,
+      requestId,
+      signature,
+      messages: 'Payment success',
+    });
+    return { status: 'success' };
+  }
 }

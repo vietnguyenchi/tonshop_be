@@ -15,4 +15,16 @@ export class TransactionController {
   async createBill(@Body() createBillDto: CreateBillDto) {
     return this.transactionService.createBill(createBillDto);
   }
+
+  @Get('callback')
+  handlePaymentCallback(
+    @Query('chargeId') chargeId: string,
+    @Query('chargeType') chargeType: string,
+    @Query('chargeCode') chargeCode: string,
+    @Query('regAmount') regAmount: string,
+    @Query('chargeAmount') chargeAmount: string,
+    @Query('status') status: string,
+    @Query('requestId') requestId: string,
+    @Query('signature') signature: string,
+  ) {}
 }

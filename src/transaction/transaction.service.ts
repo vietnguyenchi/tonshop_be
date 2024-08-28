@@ -64,7 +64,7 @@ export class TransactionService {
   async createBill(createBillDto: CreateBillDto) {
     try {
       const response = await axios.get(
-        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&chargeType=${createBillDto.paymentMethod}&amount=${createBillDto.amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transaction`,
+        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&chargeType=${createBillDto.paymentMethod}&amount=${createBillDto.amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStauts`,
       );
 
       return response.data;

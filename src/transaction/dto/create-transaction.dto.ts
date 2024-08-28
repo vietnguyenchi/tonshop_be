@@ -1,1 +1,4 @@
-export class CreateTransactionDto {}
+export class CreateTransactionDto {
+  walletAddress: string;
+  amount: number;
+}

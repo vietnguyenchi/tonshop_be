@@ -42,6 +42,16 @@ export class TransactionController {
       signature,
       messages: 'Payment success',
     });
-    return { status: 'success' };
+    return {
+      chargeId,
+      chargeType,
+      chargeCode,
+      regAmount,
+      chargeAmount,
+      status,
+      requestId,
+      signature,
+      messages: 'Payment success',
+    };
   }
 }

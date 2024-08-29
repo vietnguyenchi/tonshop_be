@@ -31,3 +31,24 @@ enum Role {
   uesr
   admin
 }
+
+model transaction {
+  id            String  @id @default(uuid())
+  chargeId      String  @unique
+  amount        Decimal
+  code          String
+  chargeType    String
+  redirect_ssl  String
+  quantity      Float
+  walletAddress String
+  chain         String
+  status        Status  @default(waiting)
+}
+
+enum Status {
+  waiting
+  success
+  timeout
+  unknow
+  cancel
+}

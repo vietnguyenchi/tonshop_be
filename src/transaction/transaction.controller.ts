@@ -1,9 +1,11 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { CreateBillDto } from './dto/create-bill.dto';
 import { TransactionGateway } from './transaction.gateway';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { Prisma } from '@prisma/client';
+import { CreateTonTransactionDto } from './dto/create-tonTransaction.dto';
 
-@Controller('')
+@Controller('transaction')
 export class TransactionController {
   constructor(
     private readonly transactionService: TransactionService,
@@ -11,13 +13,13 @@ export class TransactionController {
   ) {}
 
   @Post()
-  async create(@Query() walletAddress: string, @Query() amount: number) {
-    return this.transactionService.transaction({ walletAddress, amount });
+  async createTransaction(@Body() createTransactionDto: CreateTransactionDto) {
+    return this.transactionService.createTransaction(createTransactionDto);
   }
 
-  @Post('transaction/create-bill')
-  async createBill(@Body() createBillDto: CreateBillDto) {
-    return this.transactionService.createBill(createBillDto);
+  @Post('/ton')
+  async transactionTon(@Body() createTransactionDto: CreateTonTransactionDto) {
+    return this.transactionService.transactionTon(createTransactionDto);
   }
 
   @Get('api/momo_callback')
@@ -53,5 +55,36 @@ export class TransactionController {
       signature,
       messages: 'Payment success',
     };
+  }
+
+  @Get('/waiting')
+  async findWaitingTransactions() {
+    return this.transactionService.findWaitingTransactions();
+  }
+
+  @Post('update')
+  async updateTransactionStatus(
+    @Query('chargeId') chargeId: string,
+    @Body() updateTransactionDto: Prisma.transactionUpdateInput,
+  ) {
+    return this.transactionService.updateTransactionStatus(
+      chargeId,
+      updateTransactionDto,
+    );
+  }
+
+  @Get('find')
+  async findTransactionByChargeId(@Query('chargeId') chargeId: string) {
+    return this.transactionService.findTransactionByChargeId(chargeId);
+  }
+
+  @Get()
+  async findAll() {
+    return this.transactionService.findAllTransactions();
+  }
+
+  @Get('check')
+  async checkTransactionStatus(@Query('chargeId') chargeId: string) {
+    return this.transactionService.checkTransactionStatus(chargeId);
   }
 }

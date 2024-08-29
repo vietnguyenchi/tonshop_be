@@ -1,19 +1,22 @@
-import { CreateBillDto } from './dto/create-bill.dto';
+import { CreateTonTransactionDto } from './dto/create-tonTransaction.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { HttpException, Injectable } from '@nestjs/common';
 import { internal, TonClient, WalletContractV4 } from '@ton/ton';
 import { mnemonicToWalletKey } from '@ton/crypto';
-import { getHttpEndpoint } from '@orbs-network/ton-access';
+import { getHttpEndpoint, Network } from '@orbs-network/ton-access';
 import axios from 'axios';
+import { DatabaseService } from 'src/database/database.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
+  constructor(private readonly databaseService: DatabaseService) {}
+
   sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  async transaction(createTransactionDto: CreateTransactionDto) {
+  async transactionTon(createTonTransactionDto: CreateTonTransactionDto) {
     const mnemonic =
       'toddler option spice motor hill mother shiver desert possible space dutch midnight cable eager category token uncle sell bus letter mercy seven census cluster';
 
@@ -24,7 +27,9 @@ export class TransactionService {
       workchain: 0,
     });
 
-    const endpoint = await getHttpEndpoint({ network: 'testnet' });
+    const endpoint = await getHttpEndpoint({
+      network: createTonTransactionDto.chain as Network,
+    });
     const client = new TonClient({ endpoint });
 
     if (!(await client.isContractDeployed(wallet.address))) {
@@ -40,8 +45,8 @@ export class TransactionService {
       secretKey: key.secretKey,
       messages: [
         internal({
-          to: createTransactionDto.walletAddress,
-          value: createTransactionDto.amount.toString(),
+          to: createTonTransactionDto.walletAddress,
+          value: createTonTransactionDto.quantity.toString(),
           body: 'Transaction successful',
           bounce: false,
         }),
@@ -61,31 +66,88 @@ export class TransactionService {
     };
   }
 
-  async createBill(createBillDto: CreateBillDto) {
+  async createTransaction(createTransactionDto: CreateTransactionDto) {
     try {
       const response = await axios.get(
-        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&chargeType=${createBillDto.paymentMethod}&amount=${createBillDto.amount}&requestId=test01&callback=https://tonshop-be.onrender.com/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
+        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&chargeType=${createTransactionDto.chargeType}&amount=${createTransactionDto.amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
       );
 
-      return response.data;
+      const data = {
+        chargeId: response.data.data.id.toString(),
+        chargeType: response.data.data.chargeType,
+        code: response.data.data.code,
+        amount: response.data.data.amount,
+        redirect_ssl: response.data.data.redirect_ssl,
+        quantity: createTransactionDto.quantity,
+        chain: createTransactionDto.chain,
+        walletAddress: createTransactionDto.walletAddress,
+      };
+
+      return this.databaseService.transaction.create({
+        data,
+      });
     } catch (error) {
-      console.log(error);
+      throw new HttpException(
+        {
+          status: 'error',
+          message: 'Error while creating transaction',
+        },
+        500,
+      );
     }
   }
 
-  findAll() {
-    return `This action returns all transaction`;
+  async findWaitingTransactions() {
+    return this.databaseService.transaction.findMany({
+      where: {
+        status: 'waiting',
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
+  async updateTransactionStatus(
+    chargeId: string,
+    data: Prisma.transactionUpdateInput,
+  ) {
+    return this.databaseService.transaction.update({
+      where: { chargeId },
+      data,
+    });
   }
 
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
+  async findTransactionByChargeId(chargeId: string) {
+    return this.databaseService.transaction.findUnique({
+      where: { chargeId },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
+  async findAllTransactions() {
+    return this.databaseService.transaction.findMany();
+  }
+
+  async checkTransactionStatus(chargeId: string) {
+    const transaction = await this.findTransactionByChargeId(chargeId);
+
+    if (!transaction) {
+      throw new HttpException(
+        {
+          status: 'error',
+          message: 'Transaction not found',
+        },
+        404,
+      );
+    }
+
+    const response = await axios.get(
+      `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&id=${chargeId}`,
+    );
+
+    if (response.data.data.status !== 'waiting') {
+      await this.updateTransactionStatus(chargeId, {
+        status: response.data.data.status,
+      });
+    }
+
+    return response.data.data;
   }
 }

@@ -12,16 +12,19 @@ import { Prisma } from '@prisma/client';
 export class TransactionService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  sleep(ms: number) {
+  private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  async transactionTon(createTonTransactionDto: CreateTonTransactionDto) {
-    const mnemonic =
-      'toddler option spice motor hill mother shiver desert possible space dutch midnight cable eager category token uncle sell bus letter mercy seven census cluster';
+  async transactionTon(
+    createTonTransactionDto: CreateTonTransactionDto,
+  ): Promise<{ message: string; status: string }> {
+    const mnemonic = process.env.WALLET_MNEMONIC;
+    if (!mnemonic) {
+      throw new Error('Wallet mnemonic not found in environment variables');
+    }
 
     const key = await mnemonicToWalletKey(mnemonic.split(' '));
-
     const wallet = WalletContractV4.create({
       publicKey: key.publicKey,
       workchain: 0,
@@ -33,15 +36,14 @@ export class TransactionService {
     const client = new TonClient({ endpoint });
 
     if (!(await client.isContractDeployed(wallet.address))) {
-      console.log('Wallet not deployed');
-      return;
+      throw new Error('Wallet not deployed');
     }
 
     const walletContract = client.open(wallet);
     const seqno = await walletContract.getSeqno();
 
     await walletContract.sendTransfer({
-      seqno: seqno,
+      seqno,
       secretKey: key.secretKey,
       messages: [
         internal({
@@ -53,17 +55,40 @@ export class TransactionService {
       ],
     });
 
-    let currentSeqno = seqno;
-    while (currentSeqno === seqno) {
-      console.log('Waiting for the transaction to be confirmed...');
-      await this.sleep(1500);
-      currentSeqno = await walletContract.getSeqno();
-    }
+    const result = await this.waitForTransactionConfirmation(
+      walletContract,
+      seqno,
+    );
 
     return {
-      message: 'Transaction confirmed',
-      status: 'success',
+      message: result.success ? 'Transaction confirmed' : 'Transaction failed',
+      status: result.success ? 'success' : 'failure',
     };
+  }
+
+  private async waitForTransactionConfirmation(
+    walletContract: any,
+    initialSeqno: number,
+    maxAttempts = 10,
+  ): Promise<{ success: boolean }> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      await this.sleep(1500);
+      const currentSeqno = await walletContract.getSeqno();
+      if (currentSeqno > initialSeqno) {
+        // Transaction confirmed
+        const transactions = await walletContract.getTransactions();
+        const lastTransaction = transactions[0];
+
+        // Check if the transaction was successful
+        if (lastTransaction.exitCode === 0) {
+          return { success: true };
+        } else {
+          return { success: false };
+        }
+      }
+    }
+    // Timeout, consider as failure
+    return { success: false };
   }
 
   async createTransaction(createTransactionDto: CreateTransactionDto) {

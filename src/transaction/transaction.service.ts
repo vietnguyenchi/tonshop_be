@@ -58,6 +58,7 @@ export class TransactionService {
     const result = await this.waitForTransactionConfirmation(
       walletContract,
       seqno,
+      createTonTransactionDto,
     );
 
     return {
@@ -69,24 +70,40 @@ export class TransactionService {
   private async waitForTransactionConfirmation(
     walletContract: any,
     initialSeqno: number,
+    createTonTransactionDto: CreateTonTransactionDto,
     maxAttempts = 10,
-  ): Promise<{ success: boolean }> {
+  ): Promise<{ success: boolean; transactionHash?: string }> {
+    const client = walletContract.client;
+    const address = await walletContract.getAddress();
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await this.sleep(1500);
       const currentSeqno = await walletContract.getSeqno();
-      if (currentSeqno > initialSeqno) {
-        // Transaction confirmed
-        const transactions = await walletContract.getTransactions();
-        const lastTransaction = transactions[0];
 
-        // Check if the transaction was successful
-        if (lastTransaction.exitCode === 0) {
-          return { success: true };
-        } else {
-          return { success: false };
+      if (currentSeqno > initialSeqno) {
+        // Fetch transactions since the initial seqno
+        const transactions = await client.getTransactions(address, {
+          limit: 20,
+          fromLt: BigInt(0),
+        });
+
+        // Find the specific transaction we're looking for
+        const targetTransaction = transactions.find(
+          (tx: any) =>
+            tx.inMessage?.value === createTonTransactionDto.quantity.toString(),
+        );
+
+        if (targetTransaction) {
+          // Check if the transaction was successful
+          if (targetTransaction.computePhase.success) {
+            return { success: true, transactionHash: targetTransaction.hash };
+          } else {
+            return { success: false, transactionHash: targetTransaction.hash };
+          }
         }
       }
     }
+
     // Timeout, consider as failure
     return { success: false };
   }

@@ -5,4 +5,5 @@ export class CreateTransactionDto {
   chargeType: string;
   amount: number;
   status?: string;
+  userId: string;
 }

@@ -111,7 +111,7 @@ export class TransactionService {
   async createTransaction(createTransactionDto: CreateTransactionDto) {
     try {
       const response = await axios.get(
-        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&chargeType=${createTransactionDto.chargeType}&amount=${createTransactionDto.amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
+        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${createTransactionDto.amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
       );
 
       const data = {
@@ -123,6 +123,7 @@ export class TransactionService {
         quantity: createTransactionDto.quantity,
         chain: createTransactionDto.chain,
         walletAddress: createTransactionDto.walletAddress,
+        userId: createTransactionDto.userId,
       };
 
       return this.databaseService.transaction.create({
@@ -139,10 +140,11 @@ export class TransactionService {
     }
   }
 
-  async findWaitingTransactions() {
+  async findWaitingTransactions(userId: string) {
     return this.databaseService.transaction.findMany({
       where: {
         status: 'waiting',
+        userId,
       },
     });
   }
@@ -163,8 +165,12 @@ export class TransactionService {
     });
   }
 
-  async findAllTransactions() {
-    return this.databaseService.transaction.findMany();
+  async findAllTransactions(userId: string) {
+    return this.databaseService.transaction.findMany({
+      where: {
+        userId: userId,
+      },
+    });
   }
 
   async checkTransactionStatus(chargeId: string) {
@@ -181,7 +187,7 @@ export class TransactionService {
     }
 
     const response = await axios.get(
-      `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=56c1e562-8a16-43a7-922b-607f1a3cb764&id=${chargeId}`,
+      `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${process.env.API_KEY}&id=${chargeId}`,
     );
 
     if (response.data.data.status !== 'waiting') {

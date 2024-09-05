@@ -58,8 +58,8 @@ export class TransactionController {
   }
 
   @Get('/waiting')
-  async findWaitingTransactions() {
-    return this.transactionService.findWaitingTransactions();
+  async findWaitingTransactions(@Query('userId') userId: string) {
+    return this.transactionService.findWaitingTransactions(userId);
   }
 
   @Post('update')
@@ -79,8 +79,8 @@ export class TransactionController {
   }
 
   @Get()
-  async findAll() {
-    return this.transactionService.findAllTransactions();
+  async findAll(@Query('userId') userId: string) {
+    return this.transactionService.findAllTransactions(userId);
   }
 
   @Get('check')

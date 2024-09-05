@@ -3,7 +3,8 @@ export class CreateTransactionDto {
   quantity: number;
   chain: string;
   chargeType: string;
-  amount: number;
   status?: string;
   userId: string;
+  transactionFee: number;
+  exchangeRate: number;
 }

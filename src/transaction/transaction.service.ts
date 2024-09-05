@@ -110,20 +110,26 @@ export class TransactionService {
 
   async createTransaction(createTransactionDto: CreateTransactionDto) {
     try {
+      const amount =
+        createTransactionDto.exchangeRate * createTransactionDto.quantity +
+        createTransactionDto.transactionFee;
+
       const response = await axios.get(
-        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${createTransactionDto.amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
+        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
       );
 
-      const data = {
+      const data: Prisma.transactionCreateInput = {
         chargeId: response.data.data.id.toString(),
         chargeType: response.data.data.chargeType,
         code: response.data.data.code,
-        amount: response.data.data.amount,
+        amount: amount,
         redirect_ssl: response.data.data.redirect_ssl,
         quantity: createTransactionDto.quantity,
         chain: createTransactionDto.chain,
         walletAddress: createTransactionDto.walletAddress,
-        userId: createTransactionDto.userId,
+        user: { connect: { telegramId: createTransactionDto.userId } },
+        transactionFee: createTransactionDto.transactionFee,
+        exchangeRate: createTransactionDto.exchangeRate,
       };
 
       return this.databaseService.transaction.create({

@@ -199,16 +199,21 @@ export class TransactionService {
       );
     }
 
-    const response = await axios.get(
-      `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${process.env.API_KEY}&id=${chargeId}`,
-    );
+    try {
+      const response = await axios.get(
+        `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${process.env.API_KEY}&id=${chargeId}`,
+      );
 
-    if (response.data.data.status !== 'waiting') {
-      await this.updateTransactionStatus(chargeId, {
-        status: response.data.data.status,
-      });
+      return response.data;
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        {
+          status: 'error',
+          message: 'Error while checking transaction status',
+        },
+        500,
+      );
     }
-
-    return response.data.data;
   }
 }

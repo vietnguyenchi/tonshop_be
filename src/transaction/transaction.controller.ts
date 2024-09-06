@@ -8,6 +8,7 @@ import {
   HttpStatus,
   ValidationPipe,
   Patch,
+  Param,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 // import { TransactionGateway } from './transaction.gateway';
@@ -84,9 +85,9 @@ export class TransactionController {
     }
   }
 
-  @Patch('update')
+  @Patch('update/:chargeId')
   async updateTransactionStatus(
-    @Query('chargeId') chargeId: string,
+    @Param('chargeId') chargeId: string,
     @Body(ValidationPipe) updateTransactionDto: UpdateTransactionDto,
   ) {
     try {
@@ -102,8 +103,8 @@ export class TransactionController {
     }
   }
 
-  @Get('find')
-  async getTransactionByChargeId(@Query('chargeId') chargeId: string) {
+  @Get('find/:chargeId')
+  async getTransactionByChargeId(@Param('chargeId') chargeId: string) {
     try {
       return await this.transactionService.findTransactionByChargeId(chargeId);
     } catch (error) {
@@ -114,10 +115,10 @@ export class TransactionController {
     }
   }
 
-  @Get()
-  async getAllTransactions(@Query(ValidationPipe) query: TransactionQueryDto) {
+  @Get(':userId')
+  async getAllTransactions(@Param('userId') userId: string) {
     try {
-      return await this.transactionService.findAllTransactions(query.userId);
+      return await this.transactionService.findAllTransactions(userId);
     } catch (error) {
       throw new HttpException(
         'Failed to fetch transactions',
@@ -126,8 +127,8 @@ export class TransactionController {
     }
   }
 
-  @Get('check')
-  async checkTransactionStatus(@Query('chargeId') chargeId: string) {
+  @Get('check/:chargeId')
+  async checkTransactionStatus(@Param('chargeId') chargeId: string) {
     try {
       return await this.transactionService.checkTransactionStatus(chargeId);
     } catch (error) {

@@ -118,7 +118,7 @@ export class TransactionService {
       );
 
       const response = await axios.get(
-        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus/`,
+        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/history`,
       );
 
       const data: Prisma.transactionCreateInput = {
@@ -170,9 +170,32 @@ export class TransactionService {
   }
 
   async findTransactionByChargeId(chargeId: string) {
-    return this.databaseService.transaction.findUnique({
+    const transaction = await this.databaseService.transaction.findUnique({
       where: { chargeId },
     });
+
+    if (!transaction) {
+      throw new HttpException(
+        {
+          status: 'error',
+          message: 'Transaction not found',
+        },
+        404,
+      );
+    }
+
+    if (transaction.status === 'waiting') {
+      const status = await this.checkTransactionStatus(chargeId);
+      if (status.status !== 'Waiting') {
+        const updatedTransaction = await this.updateTransactionStatus(
+          chargeId,
+          { status: status.status },
+        );
+        return updatedTransaction;
+      }
+    }
+
+    return transaction;
   }
 
   async findAllTransactions(userId: string) {
@@ -204,13 +227,13 @@ export class TransactionService {
         `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${process.env.API_KEY}&id=${chargeId}`,
       );
 
-      return response.data;
+      return response.data.data;
     } catch (error) {
       console.log(error);
       throw new HttpException(
         {
           status: 'error',
-          message: 'Error while checking transaction status',
+          message: error.response.data.message,
         },
         500,
       );

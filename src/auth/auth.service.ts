@@ -8,8 +8,8 @@ export class AuthService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async login(loginDto: LoginDto): Promise<User> {
-    let user = await this.databaseService.user.findFirst({
-      where: { username: loginDto.username },
+    let user = await this.databaseService.user.findUnique({
+      where: { telegramId: loginDto.telegramId },
     });
 
     if (!user) {

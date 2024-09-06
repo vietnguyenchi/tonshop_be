@@ -110,12 +110,15 @@ export class TransactionService {
 
   async createTransaction(createTransactionDto: CreateTransactionDto) {
     try {
-      const amount =
-        createTransactionDto.exchangeRate * createTransactionDto.quantity +
-        createTransactionDto.transactionFee;
+      const amount = parseInt(
+        Math.ceil(
+          createTransactionDto.exchangeRate * createTransactionDto.quantity +
+            createTransactionDto.transactionFee,
+        ).toString(),
+      );
 
       const response = await axios.get(
-        `http://easypay.vnm.bz:10007/api/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
+        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus/`,
       );
 
       const data: Prisma.transactionCreateInput = {
@@ -136,6 +139,7 @@ export class TransactionService {
         data,
       });
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         {
           status: 'error',
@@ -175,6 +179,9 @@ export class TransactionService {
     return this.databaseService.transaction.findMany({
       where: {
         userId: userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }

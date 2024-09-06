@@ -33,11 +33,15 @@ export class TransactionController {
         createTransactionDto,
       );
     } catch (error) {
-      console.log(error);
-      throw new HttpException(
-        'Failed to create transaction',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.error('Error creating transaction:', error);
+      if (error instanceof HttpException) {
+        throw error;
+      } else {
+        throw new HttpException(
+          error.message || 'Failed to create transaction',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
 

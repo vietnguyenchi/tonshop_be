@@ -69,14 +69,10 @@ export class TransactionController {
   //   };
   // }
 
-  @Get('/waiting')
-  async getWaitingTransactions(
-    @Query(ValidationPipe) query: TransactionQueryDto,
-  ) {
+  @Get('/waiting/:userId')
+  async getWaitingTransactions(@Param('userId') userId: string) {
     try {
-      return await this.transactionService.findWaitingTransactions(
-        query.userId,
-      );
+      return await this.transactionService.findWaitingTransactions(userId);
     } catch (error) {
       throw new HttpException(
         'Failed to fetch waiting transactions',

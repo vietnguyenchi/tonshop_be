@@ -120,6 +120,7 @@ export class TransactionController {
     try {
       return await this.transactionService.findAllTransactions(userId);
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         'Failed to fetch transactions',
         HttpStatus.INTERNAL_SERVER_ERROR,

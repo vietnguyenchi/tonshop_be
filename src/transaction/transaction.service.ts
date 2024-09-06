@@ -118,7 +118,7 @@ export class TransactionService {
       );
 
       const response = await axios.get(
-        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/history`,
+        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus/`,
       );
 
       const data: Prisma.transactionCreateInput = {
@@ -210,18 +210,6 @@ export class TransactionService {
   }
 
   async checkTransactionStatus(chargeId: string) {
-    const transaction = await this.findTransactionByChargeId(chargeId);
-
-    if (!transaction) {
-      throw new HttpException(
-        {
-          status: 'error',
-          message: 'Transaction not found',
-        },
-        404,
-      );
-    }
-
     try {
       const response = await axios.get(
         `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${process.env.API_KEY}&id=${chargeId}`,

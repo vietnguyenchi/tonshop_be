@@ -116,16 +116,37 @@ export class TransactionController {
   }
 
   @Get(':userId')
-  async getAllTransactions(@Param('userId') userId: string) {
+  async getAllTransactions(
+    @Param('userId') userId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
     try {
-      return await this.transactionService.findAllTransactions(userId);
+      return await this.transactionService.findAllTransactions(
+        userId,
+        page,
+        limit,
+      );
     } catch (error) {
-      console.log(error);
+      console.error('Error fetching transactions:', error);
       throw new HttpException(
         'Failed to fetch transactions',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  @Get('load-more/:userId')
+  async loadMoreTransactions(
+    @Param('userId') userId: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return await this.transactionService.loadMoreTransactions(
+      userId,
+      page,
+      limit,
+    );
   }
 
   @Get('check/:chargeId')

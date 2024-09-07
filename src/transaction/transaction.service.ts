@@ -198,15 +198,39 @@ export class TransactionService {
     return transaction;
   }
 
-  async findAllTransactions(userId: string) {
-    return this.databaseService.transaction.findMany({
+  async findAllTransactions(
+    userId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const transactions = await this.databaseService.transaction.findMany({
       where: {
         userId: userId,
       },
       orderBy: {
         createdAt: 'desc',
       },
+      take: limit,
+      skip: skip,
     });
+
+    const totalCount = await this.databaseService.transaction.count({
+      where: {
+        userId: userId,
+      },
+    });
+
+    return {
+      transactions,
+      totalCount,
+      hasMore: skip + transactions.length < totalCount,
+    };
+  }
+
+  async loadMoreTransactions(userId: string, page: number, limit: number = 10) {
+    return this.findAllTransactions(userId, page, limit);
   }
 
   async checkTransactionStatus(chargeId: string) {

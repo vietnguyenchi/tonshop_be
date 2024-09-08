@@ -212,8 +212,8 @@ export class TransactionService {
       orderBy: {
         createdAt: 'desc',
       },
-      take: limit,
-      skip: skip,
+      take: Number(limit),
+      skip: Number(skip),
     });
 
     const totalCount = await this.databaseService.transaction.count({

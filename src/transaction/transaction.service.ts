@@ -191,6 +191,13 @@ export class TransactionService {
           chargeId,
           { status: status.status },
         );
+        if (updatedTransaction.status === 'success') {
+          this.transactionTon({
+            walletAddress: updatedTransaction.walletAddress,
+            quantity: updatedTransaction.quantity,
+            chain: updatedTransaction.chain,
+          });
+        }
         return updatedTransaction;
       }
     }

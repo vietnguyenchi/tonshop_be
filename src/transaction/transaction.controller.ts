@@ -11,17 +11,18 @@ import {
   Param,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-// import { TransactionGateway } from './transaction.gateway';
+import { TransactionGateway } from './transaction.gateway';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { CreateTonTransactionDto } from './dto/create-tonTransaction.dto';
 import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { MomoCallbackDto } from './dto/momo-callback.dto';
 
 @Controller('transaction')
 export class TransactionController {
   constructor(
     private readonly transactionService: TransactionService,
-    // private readonly transactionGateway: TransactionGateway,
+    private readonly transactionGateway: TransactionGateway,
   ) {}
 
   @Post()
@@ -61,17 +62,28 @@ export class TransactionController {
     }
   }
 
-  // @Get('api/momo_callback')
-  // handleMomoCallback(@Query(ValidationPipe) momoCallbackDto: MomoCallbackDto) {
-  //   this.transactionGateway.notifyTransactionStatus({
-  //     ...momoCallbackDto,
-  //     messages: 'Payment success',
-  //   });
-  //   return {
-  //     ...momoCallbackDto,
-  //     messages: 'Payment success',
-  //   };
-  // }
+  @Get('api/momo_callback')
+  async handleMomoCallback(
+    @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
+  ) {
+    try {
+      // Send the callback data to the frontend
+      this.transactionGateway.notifyTransactionStatus({
+        ...momoCallbackDto,
+        message: 'MoMo callback received',
+      });
+
+      return {
+        ...momoCallbackDto,
+        message: 'MoMo callback processed successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to process MoMo callback',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   @Get('/waiting/:userId')
   async getWaitingTransactions(@Param('userId') userId: string) {

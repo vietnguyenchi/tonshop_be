@@ -6,7 +6,7 @@ import { Server } from 'socket.io';
     origin: [
       'https://ton-shop.onrender.com',
       'https://ton-shop.onrender.com/transactionStatus',
-      'https://tonshop-be.onrender.com',
+      // 'https://tonshop-be.onrender.com',
     ],
   },
 })

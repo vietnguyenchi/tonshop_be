@@ -38,6 +38,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
     "passport": "^0.7.0",
     "passport-telegram": "^1.0.0",
     "reflect-metadata": "^0.2.0",

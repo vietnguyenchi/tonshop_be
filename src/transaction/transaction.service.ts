@@ -74,8 +74,7 @@ export class TransactionService {
     maxAttempts = 10,
   ): Promise<{ success: boolean; transactionHash?: string }> {
     const client = walletContract.client;
-    const address = await walletContract.getAddress();
-
+    const address = walletContract.address;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await this.sleep(1500);
       const currentSeqno = await walletContract.getSeqno();

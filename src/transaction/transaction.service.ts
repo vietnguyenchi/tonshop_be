@@ -118,7 +118,7 @@ export class TransactionService {
       );
 
       const response = await axios.get(
-        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
+        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&callback=https://ton-shop.onrender.com/transaction/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
       );
 
       const data: Prisma.transactionCreateInput = {

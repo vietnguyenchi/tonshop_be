@@ -1,42 +1,29 @@
-import { IsNumber, IsString } from 'class-validator';
+// import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class MomoCallbackDto {
-  @IsString()
-  chargeId: string;
+  chargeId?: string;
 
-  @IsString()
-  chargeType: string;
+  chargeType?: string;
 
-  @IsString()
-  chargeCode: string;
+  chargeCode?: string;
 
-  @IsNumber()
-  regAmount: number;
+  regAmount?: number;
 
-  @IsString()
-  chargeAmount: string;
+  chargeAmount?: string;
 
-  @IsString()
-  status: string;
+  status?: string;
 
-  @IsString()
-  orderId: string;
+  orderId?: string;
 
-  @IsString()
-  requestId: string;
+  requestId?: string;
 
-  @IsString()
-  signature: string;
+  signature?: string;
 
-  @IsString()
-  momoTransId: string;
+  momoTransId?: string;
 
-  @IsString()
-  result: string;
+  result?: string;
 
-  @IsNumber()
-  usdtRate: number;
+  usdtRate?: number;
 
-  @IsNumber()
-  usdAmount: number;
+  usdAmount?: number;
 }

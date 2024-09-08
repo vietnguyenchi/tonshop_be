@@ -67,7 +67,6 @@ export class TransactionController {
     @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
   ) {
     try {
-      // Send the callback data to the frontend
       this.transactionGateway.notifyTransactionStatus({
         ...momoCallbackDto,
         message: 'MoMo callback received',

@@ -18,14 +18,14 @@ import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 
-@Controller('transaction')
+@Controller()
 export class TransactionController {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly transactionGateway: TransactionGateway,
   ) {}
 
-  @Post()
+  @Post('transaction')
   async createTransaction(
     @Body(ValidationPipe) createTransactionDto: CreateTransactionDto,
   ) {
@@ -46,7 +46,7 @@ export class TransactionController {
     }
   }
 
-  @Post('/ton')
+  @Post('transaction/ton')
   async createTonTransaction(
     @Body(ValidationPipe) createTonTransactionDto: CreateTonTransactionDto,
   ) {
@@ -84,7 +84,7 @@ export class TransactionController {
     }
   }
 
-  @Get('/waiting/:userId')
+  @Get('transaction/waiting/:userId')
   async getWaitingTransactions(@Param('userId') userId: string) {
     try {
       return await this.transactionService.findWaitingTransactions(userId);
@@ -96,7 +96,7 @@ export class TransactionController {
     }
   }
 
-  @Patch('update/:chargeId')
+  @Patch('transaction/update/:chargeId')
   async updateTransactionStatus(
     @Param('chargeId') chargeId: string,
     @Body(ValidationPipe) updateTransactionDto: UpdateTransactionDto,
@@ -114,7 +114,7 @@ export class TransactionController {
     }
   }
 
-  @Get('find/:chargeId')
+  @Get('transaction/find/:chargeId')
   async getTransactionByChargeId(@Param('chargeId') chargeId: string) {
     try {
       return await this.transactionService.findTransactionByChargeId(chargeId);
@@ -126,7 +126,7 @@ export class TransactionController {
     }
   }
 
-  @Get('findAll/:userId')
+  @Get('transaction/findAll/:userId')
   async findAllTransactions(@Param('userId') userId: string) {
     try {
       return await this.transactionService.findAllTransactions(userId);
@@ -138,7 +138,7 @@ export class TransactionController {
     }
   }
 
-  @Get('check/:chargeId')
+  @Get('transaction/check/:chargeId')
   async checkTransactionStatus(@Param('chargeId') chargeId: string) {
     try {
       return await this.transactionService.checkTransactionStatus(chargeId);

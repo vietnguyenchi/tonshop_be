@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@nestjs/class-validator": "^0.13.1",
@@ -39,6 +40,7 @@
     "class-validator": "^0.14.1",
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
     "passport": "^0.7.0",
     "passport-telegram": "^1.0.0",
     "reflect-metadata": "^0.2.0",

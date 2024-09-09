@@ -7,4 +7,5 @@ export class CreateTransactionDto {
   userId: string;
   transactionFee: number;
   exchangeRate: number;
+  requestId: string;
 }

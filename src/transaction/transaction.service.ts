@@ -8,6 +8,7 @@ import axios from 'axios';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
+import * as CryptoJS from 'crypto-js';
 
 @Injectable()
 export class TransactionService {
@@ -117,8 +118,16 @@ export class TransactionService {
         ).toString(),
       );
 
+      const signkey = 'asR4#Tas';
+      const chargeType = createTransactionDto.chargeType;
+      const requestId = 'test01';
+
+      const sign = CryptoJS.MD5(
+        `${amount}${chargeType}${requestId}${signkey}`,
+      ).toString();
+
       const response = await axios.get(
-        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${createTransactionDto.chargeType}&amount=${amount}&requestId=test01&callback=https://tonshop-be.onrender.com/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus`,
+        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
       );
 
       const data: Prisma.transactionCreateInput = {
@@ -246,7 +255,10 @@ export class TransactionService {
       result: momoCallbackDto.result,
       usdAmount: Number(momoCallbackDto.usdAmount),
       usdtRate: Number(momoCallbackDto.usdtRate),
+      signature: momoCallbackDto.signature,
     };
+
+    console.log(data);
 
     return this.databaseService.momoCallback.create({
       data,

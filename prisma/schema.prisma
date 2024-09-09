@@ -43,6 +43,7 @@ model transaction {
   chargeType     String
   redirect_ssl   String
   quantity       Float
+  requestId      String
   walletAddress  String
   chain          String
   status         Status   @default(waiting)

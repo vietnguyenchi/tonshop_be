@@ -18,14 +18,14 @@ import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 
-@Controller()
+@Controller('transaction')
 export class TransactionController {
   constructor(
     private readonly transactionService: TransactionService,
     private readonly transactionGateway: TransactionGateway,
   ) {}
 
-  @Post('transaction')
+  @Post()
   async createTransaction(
     @Body(ValidationPipe) createTransactionDto: CreateTransactionDto,
   ) {
@@ -46,7 +46,7 @@ export class TransactionController {
     }
   }
 
-  @Post('transaction/ton')
+  @Post('ton')
   async createTonTransaction(
     @Body(ValidationPipe) createTonTransactionDto: CreateTonTransactionDto,
   ) {
@@ -62,21 +62,12 @@ export class TransactionController {
     }
   }
 
-  @Get('api/momo_callback')
+  @Get('momo-callback')
   async handleMomoCallback(
     @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
   ) {
     try {
-      this.transactionGateway.notifyTransactionStatus({
-        ...momoCallbackDto,
-        message: 'MoMo callback received',
-      });
-
-      await this.transactionService.createMomoCallback(momoCallbackDto);
-      return {
-        ...momoCallbackDto,
-        message: 'MoMo callback processed successfully',
-      };
+      return await this.transactionService.createMomoCallback(momoCallbackDto);
     } catch (error) {
       throw new HttpException(
         'Failed to process MoMo callback',
@@ -85,7 +76,7 @@ export class TransactionController {
     }
   }
 
-  @Get('transaction/waiting/:userId')
+  @Get('waiting/:userId')
   async getWaitingTransactions(@Param('userId') userId: string) {
     try {
       return await this.transactionService.findWaitingTransactions(userId);
@@ -97,7 +88,7 @@ export class TransactionController {
     }
   }
 
-  @Patch('transaction/update/:chargeId')
+  @Patch(':chargeId')
   async updateTransactionStatus(
     @Param('chargeId') chargeId: string,
     @Body(ValidationPipe) updateTransactionDto: UpdateTransactionDto,
@@ -115,7 +106,7 @@ export class TransactionController {
     }
   }
 
-  @Get('transaction/find/:chargeId')
+  @Get(':chargeId')
   async getTransactionByChargeId(@Param('chargeId') chargeId: string) {
     try {
       return await this.transactionService.findTransactionByChargeId(chargeId);
@@ -127,7 +118,7 @@ export class TransactionController {
     }
   }
 
-  @Get('transaction/findAll/:userId')
+  @Get('all/:userId')
   async findAllTransactions(@Param('userId') userId: string) {
     try {
       return await this.transactionService.findAllTransactions(userId);
@@ -139,10 +130,10 @@ export class TransactionController {
     }
   }
 
-  @Get('transaction/check/:chargeId')
+  @Get('check/:chargeId')
   async checkTransactionStatus(@Param('chargeId') chargeId: string) {
     try {
-      return await this.transactionService.checkTransactionStatus(chargeId);
+      await this.transactionService.checkTransactionStatus(chargeId);
     } catch (error) {
       throw new HttpException(
         'Failed to check transaction status',

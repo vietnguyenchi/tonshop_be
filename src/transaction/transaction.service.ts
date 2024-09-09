@@ -68,20 +68,16 @@ export class TransactionService {
       await this.sleep(1000);
     }
 
-    this.notifyFrontend({
-      message: 'Transaction sent',
-      status: 'success',
-      transactionDetails: {
-        walletAddress: createTonTransactionDto.walletAddress,
-        quantity: createTonTransactionDto.quantity,
-        chain: createTonTransactionDto.chain,
-      },
-    });
+    // this.transactionGateway.notifyTransactionStatus({
+    //   message: 'Transaction sent',
+    //   status: 'success',
+    //   transactionDetails: {
+    //     walletAddress: createTonTransactionDto.walletAddress,
+    //     quantity: createTonTransactionDto.quantity,
+    //     chain: createTonTransactionDto.chain,
+    //   },
+    // });
     return { message: 'Transaction sent', status: 'success' };
-  }
-
-  private notifyFrontend(data: any) {
-    this.transactionGateway.notifyTransactionStatus(data);
   }
 
   async createTransaction(createTransactionDto: CreateTransactionDto) {
@@ -102,7 +98,7 @@ export class TransactionService {
       ).toString();
 
       const response = await axios.get(
-        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
+        `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/transaction/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
       );
 
       const data: Prisma.transactionCreateInput = {
@@ -176,14 +172,6 @@ export class TransactionService {
           chargeId,
           { status: status.status },
         );
-        // if (updatedTransaction.status === 'success') {
-        //   this.transactionTon({
-        //     walletAddress: updatedTransaction.walletAddress,
-        //     quantity: updatedTransaction.quantity,
-        //     chain: updatedTransaction.chain,
-        //     message: updatedTransaction.code,
-        //   });
-        // }
         return updatedTransaction;
       }
     }
@@ -219,54 +207,47 @@ export class TransactionService {
   }
 
   async createMomoCallback(momoCallbackDto: MomoCallbackDto) {
-    // const data: Prisma.MomoCallbackCreateInput = {
-    //   chargeId: momoCallbackDto.chargeId,
-    //   chargeType: momoCallbackDto.chargeType,
-    //   chargeCode: momoCallbackDto.chargeCode,
-    //   regAmount: Number(momoCallbackDto.regAmount),
-    //   chargeAmount: momoCallbackDto.chargeAmount,
-    //   status: momoCallbackDto.status,
-    //   orderId: momoCallbackDto.orderId,
-    //   requestId: momoCallbackDto.requestId,
-    //   signature: momoCallbackDto.signature,
-    //   momoTransId: momoCallbackDto.momoTransId,
-    //   result: momoCallbackDto.result,
-    //   usdtRate: Number(momoCallbackDto.usdtRate),
-    //   usdAmount: Number(momoCallbackDto.usdAmount),
-    // };
+    if (momoCallbackDto.status !== 'success') {
+      return;
+    }
 
-    if (momoCallbackDto.status === 'success') {
-      if (
-        Number(momoCallbackDto.chargeAmount) >=
-        Number(momoCallbackDto.regAmount)
-      ) {
-        await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+    const chargeAmount = Number(momoCallbackDto.chargeAmount);
+    const regAmount = Number(momoCallbackDto.regAmount);
+
+    await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+      status: 'success',
+    });
+
+    if (chargeAmount >= regAmount) {
+      const transaction = await this.databaseService.transaction.findUnique({
+        where: { chargeId: momoCallbackDto.chargeId },
+      });
+
+      if (transaction) {
+        await this.transactionTon({
+          walletAddress: transaction.walletAddress,
+          quantity: transaction.quantity,
+          chain: transaction.chain,
+          message: transaction.code,
+        });
+
+        this.transactionGateway.notifyTransactionStatus({
+          message: 'Transfer TON successfully',
           status: 'success',
-        });
-        const transaction = await this.databaseService.transaction.findUnique({
-          where: { chargeId: momoCallbackDto.chargeId },
-        });
-
-        if (transaction) {
-          await this.transactionTon({
+          transactionDetails: {
             walletAddress: transaction.walletAddress,
             quantity: transaction.quantity,
             chain: transaction.chain,
-            message: transaction.code,
-          });
-        }
-      } else if (
-        Number(momoCallbackDto.chargeAmount) < Number(momoCallbackDto.regAmount)
-      ) {
-        await this.updateTransactionStatus(momoCallbackDto.chargeId, {
-          status: 'success',
-        });
-        this.notifyFrontend({
-          message:
-            'You have been charged less than the amount required, please try again',
-          status: 'success',
+            transaction: transaction,
+          },
         });
       }
+    } else {
+      this.transactionGateway.notifyTransactionStatus({
+        message:
+          'You have been charged less than the amount required, please try again',
+        status: 'success',
+      });
     }
   }
 }

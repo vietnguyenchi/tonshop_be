@@ -217,19 +217,17 @@ export class TransactionService {
 
       if (transaction) {
         try {
-          const result = await this.transactionTon({
+          await this.transactionTon({
             walletAddress: transaction.walletAddress,
             quantity: transaction.quantity,
             chain: transaction.chain,
             message: transaction.code,
           });
 
-          if (result.status === 'success') {
-            await this.updateTransactionStatus(momoCallbackDto.chargeId, {
-              status: 'success',
-            });
-            return transaction;
-          }
+          await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+            status: 'success',
+          });
+          return transaction;
         } catch (error) {
           console.error(error);
           this.transactionGateway.notifyTransactionStatus({

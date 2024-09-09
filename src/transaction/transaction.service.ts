@@ -207,6 +207,10 @@ export class TransactionService {
   }
 
   async createMomoCallback(momoCallbackDto: MomoCallbackDto) {
+    if (momoCallbackDto.status !== 'success') {
+      return;
+    }
+
     const chargeAmount = Number(momoCallbackDto.chargeAmount);
     const regAmount = Number(momoCallbackDto.regAmount);
 
@@ -220,23 +224,25 @@ export class TransactionService {
       });
 
       if (transaction) {
-        await this.transactionTon({
+        const result = await this.transactionTon({
           walletAddress: transaction.walletAddress,
           quantity: transaction.quantity,
           chain: transaction.chain,
           message: transaction.code,
         });
 
-        this.transactionGateway.notifyTransactionStatus({
-          message: 'Transfer TON successfully',
-          status: 'success',
-          transactionDetails: {
-            walletAddress: transaction.walletAddress,
-            quantity: transaction.quantity,
-            chain: transaction.chain,
-            transaction: transaction,
-          },
-        });
+        if (result.status === 'success') {
+          this.transactionGateway.notifyTransactionStatus({
+            message: 'Transfer TON successfully',
+            status: 'success',
+            transactionDetails: {
+              walletAddress: transaction.walletAddress,
+              quantity: transaction.quantity,
+              chain: transaction.chain,
+              transaction: transaction,
+            },
+          });
+        }
       }
     } else {
       this.transactionGateway.notifyTransactionStatus({

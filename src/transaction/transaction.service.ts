@@ -120,7 +120,7 @@ export class TransactionService {
 
       const signkey = 'asR4#Tas';
       const chargeType = createTransactionDto.chargeType;
-      const requestId = 'test01';
+      const requestId = createTransactionDto.requestId;
 
       const sign = CryptoJS.MD5(
         `${amount}${chargeType}${requestId}${signkey}`,
@@ -142,6 +142,7 @@ export class TransactionService {
         user: { connect: { telegramId: createTransactionDto.userId } },
         transactionFee: createTransactionDto.transactionFee,
         exchangeRate: createTransactionDto.exchangeRate,
+        requestId: createTransactionDto.requestId,
       };
 
       return this.databaseService.transaction.create({

@@ -126,6 +126,8 @@ export class TransactionService {
         `${amount}${chargeType}${requestId}${signkey}`,
       ).toString();
 
+      console.log(sign);
+
       const response = await axios.get(
         `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
       );

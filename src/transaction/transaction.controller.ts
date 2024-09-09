@@ -147,26 +147,33 @@ export class TransactionController {
 
   @Get('test_callback')
   async testCallback() {
-    this.transactionGateway.notifyTransactionStatus({
-      status: 'success',
-      message: 'Transaction status updated',
-      transactionDetails: {
-        id: '1',
-        chargeId: '1838640',
-        amount: 12300,
-        code: '123456',
-        chargeType: 'momo',
-        redirect_ssl: 'https://google.com',
-        quantity: 0.1,
-        walletAddress: '0:b5ee9c7245978b723e0123456789abcdef',
-        chain: 'testnet',
+    try {
+      this.transactionGateway.notifyTransactionStatus({
         status: 'success',
-        createdAt: '2024-05-01T00:00:00Z',
-        updatedAt: '2024-05-01T00:00:00Z',
-        userId: '5441070581',
-        exchangeRate: 125.889,
-        transactionFee: 0,
-      },
-    });
+        message: 'Transaction status updated',
+        transactionDetails: {
+          id: '1',
+          chargeId: '1838640',
+          amount: 12300,
+          code: '123456',
+          chargeType: 'momo',
+          redirect_ssl: 'https://google.com',
+          quantity: 0.1,
+          walletAddress: '0:b5ee9c7245978b723e0123456789abcdef',
+          chain: 'testnet',
+          status: 'success',
+          createdAt: '2024-05-01T00:00:00Z',
+          updatedAt: '2024-05-01T00:00:00Z',
+          userId: '5441070581',
+          exchangeRate: 125.889,
+          transactionFee: 0,
+        },
+      });
+
+      return {
+        status: 'success',
+        message: 'Transaction status updated',
+      };
+    } catch (error) {}
   }
 }

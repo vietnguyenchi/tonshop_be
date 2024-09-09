@@ -49,7 +49,7 @@ export class TransactionService {
         internal({
           to: createTonTransactionDto.walletAddress,
           value: createTonTransactionDto.quantity.toString(),
-          body: 'Transaction successful',
+          body: createTonTransactionDto.message,
           bounce: false,
         }),
       ],
@@ -74,7 +74,7 @@ export class TransactionService {
     maxAttempts = 10,
   ): Promise<{ success: boolean; transactionHash?: string }> {
     const client = walletContract.client;
-    const address = walletContract.address;
+    const address = walletContract.address.toString();
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await this.sleep(1500);
       const currentSeqno = await walletContract.getSeqno();
@@ -89,7 +89,7 @@ export class TransactionService {
         // Find the specific transaction we're looking for
         const targetTransaction = transactions.find(
           (tx: any) =>
-            tx.inMessage?.value === createTonTransactionDto.quantity.toString(),
+            tx.inMessage?.body?.text === createTonTransactionDto.message,
         );
 
         if (targetTransaction) {
@@ -195,6 +195,7 @@ export class TransactionService {
             walletAddress: updatedTransaction.walletAddress,
             quantity: updatedTransaction.quantity,
             chain: updatedTransaction.chain,
+            message: updatedTransaction.code,
           });
         }
         return updatedTransaction;
@@ -208,6 +209,7 @@ export class TransactionService {
     return this.databaseService.transaction.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
+      take: 10,
     });
   }
 

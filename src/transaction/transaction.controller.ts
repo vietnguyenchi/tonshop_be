@@ -67,7 +67,20 @@ export class TransactionController {
     @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
   ) {
     try {
-      await this.transactionService.createMomoCallback(momoCallbackDto);
+      const transaction =
+        await this.transactionService.createMomoCallback(momoCallbackDto);
+      if (transaction) {
+        this.transactionGateway.notifyTransactionStatus({
+          message: 'Transfer TON successfully',
+          status: 'success',
+          transactionDetails: {
+            walletAddress: transaction.walletAddress,
+            quantity: transaction.quantity,
+            chain: transaction.chain,
+            transaction: transaction,
+          },
+        });
+      }
       return {
         ...momoCallbackDto,
       };

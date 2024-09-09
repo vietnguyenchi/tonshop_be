@@ -228,16 +228,7 @@ export class TransactionService {
             await this.updateTransactionStatus(momoCallbackDto.chargeId, {
               status: 'success',
             });
-            this.transactionGateway.notifyTransactionStatus({
-              message: 'Transfer TON successfully',
-              status: 'success',
-              transactionDetails: {
-                walletAddress: transaction.walletAddress,
-                quantity: transaction.quantity,
-                chain: transaction.chain,
-                transaction: transaction,
-              },
-            });
+            return transaction;
           }
         } catch (error) {
           console.error(error);
@@ -262,6 +253,8 @@ export class TransactionService {
           'You have been charged less than the amount required, please try again',
         status: 'error',
       });
+
+      return null;
     }
   }
 }

@@ -49,31 +49,12 @@ export class TransactionService {
     const seqno = await walletContract.getSeqno();
 
     let currentSeqno = seqno;
-    const maxAttempts = 10;
-    let attempts = 0;
-
-    while (currentSeqno === seqno && attempts < maxAttempts) {
-      console.log(
-        `Waiting for transaction to be sent... Attempt ${attempts + 1}`,
-      );
-      currentSeqno = await walletContract.getSeqno();
+    while (currentSeqno === seqno) {
+      console.log('Waiting for transaction to be confirmed...');
       await this.sleep(1000);
-      attempts++;
+      currentSeqno = await walletContract.getSeqno();
     }
 
-    if (attempts >= maxAttempts) {
-      throw new Error('Transaction confirmation timeout');
-    }
-
-    // this.transactionGateway.notifyTransactionStatus({
-    //   message: 'Transaction sent',
-    //   status: 'success',
-    //   transactionDetails: {
-    //     walletAddress: createTonTransactionDto.walletAddress,
-    //     quantity: createTonTransactionDto.quantity,
-    //     chain: createTonTransactionDto.chain,
-    //   },
-    // });
     return { message: 'Transaction sent', status: 'success' };
   }
 

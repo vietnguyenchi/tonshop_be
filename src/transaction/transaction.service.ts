@@ -48,6 +48,19 @@ export class TransactionService {
     const walletContract = client.open(wallet);
     const seqno = await walletContract.getSeqno();
 
+    await walletContract.sendTransfer({
+      secretKey: key.secretKey,
+      seqno: seqno,
+      messages: [
+        internal({
+          to: createTonTransactionDto.walletAddress,
+          value: createTonTransactionDto.quantity.toString(),
+          body: createTonTransactionDto.message,
+          bounce: false,
+        }),
+      ],
+    });
+
     let currentSeqno = seqno;
     while (currentSeqno === seqno) {
       console.log('Waiting for transaction to be confirmed...');

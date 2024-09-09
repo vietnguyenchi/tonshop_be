@@ -9,10 +9,14 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 import * as CryptoJS from 'crypto-js';
+import { TransactionGateway } from './transaction.gateway';
 
 @Injectable()
 export class TransactionService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly transactionGateway: TransactionGateway,
+  ) {}
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -57,56 +61,27 @@ export class TransactionService {
       ],
     });
 
-    const result = await this.waitForTransactionConfirmation(
-      walletContract,
-      seqno,
-      createTonTransactionDto,
-    );
-
-    return {
-      message: result.success ? 'Transaction confirmed' : 'Transaction failed',
-      status: result.success ? 'success' : 'failure',
-    };
-  }
-
-  private async waitForTransactionConfirmation(
-    walletContract: any,
-    initialSeqno: number,
-    createTonTransactionDto: CreateTonTransactionDto,
-    maxAttempts = 10,
-  ): Promise<{ success: boolean; transactionHash?: string }> {
-    const client = walletContract.client;
-    const address = walletContract.address.toString();
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      await this.sleep(1500);
-      const currentSeqno = await walletContract.getSeqno();
-
-      if (currentSeqno > initialSeqno) {
-        // Fetch transactions since the initial seqno
-        const transactions = await client.getTransactions(address, {
-          limit: 20,
-          fromLt: BigInt(0),
-        });
-
-        // Find the specific transaction we're looking for
-        const targetTransaction = transactions.find(
-          (tx: any) =>
-            tx.inMessage?.body?.text === createTonTransactionDto.message,
-        );
-
-        if (targetTransaction) {
-          // Check if the transaction was successful
-          if (targetTransaction.computePhase.success) {
-            return { success: true, transactionHash: targetTransaction.hash };
-          } else {
-            return { success: false, transactionHash: targetTransaction.hash };
-          }
-        }
-      }
+    let currentSeqno = seqno;
+    while (currentSeqno === seqno) {
+      console.log('Waiting for transaction to be sent...');
+      currentSeqno = await walletContract.getSeqno();
+      await this.sleep(1000);
     }
 
-    // Timeout, consider as failure
-    return { success: false };
+    this.notifyFrontend({
+      message: 'Transaction sent',
+      status: 'success',
+      transactionDetails: {
+        walletAddress: createTonTransactionDto.walletAddress,
+        quantity: createTonTransactionDto.quantity,
+        chain: createTonTransactionDto.chain,
+      },
+    });
+    return { message: 'Transaction sent', status: 'success' };
+  }
+
+  private notifyFrontend(data: any) {
+    this.transactionGateway.notifyTransactionStatus(data);
   }
 
   async createTransaction(createTransactionDto: CreateTransactionDto) {
@@ -125,8 +100,6 @@ export class TransactionService {
       const sign = CryptoJS.MD5(
         `${amount}${chargeType}${requestId}${signkey}`,
       ).toString();
-
-      console.log(sign);
 
       const response = await axios.get(
         `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/api/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
@@ -246,25 +219,54 @@ export class TransactionService {
   }
 
   async createMomoCallback(momoCallbackDto: MomoCallbackDto) {
-    const data: Prisma.MomoCallbackCreateInput = {
-      chargeId: momoCallbackDto.chargeId,
-      chargeType: momoCallbackDto.chargeType,
-      chargeCode: momoCallbackDto.chargeCode,
-      regAmount: Number(momoCallbackDto.regAmount),
-      chargeAmount: momoCallbackDto.chargeAmount,
-      status: momoCallbackDto.status,
-      orderId: momoCallbackDto.orderId,
-      requestId: momoCallbackDto.requestId,
-      result: momoCallbackDto.result,
-      usdAmount: Number(momoCallbackDto.usdAmount),
-      usdtRate: Number(momoCallbackDto.usdtRate),
-      signature: momoCallbackDto.signature,
-    };
+    // const data: Prisma.MomoCallbackCreateInput = {
+    //   chargeId: momoCallbackDto.chargeId,
+    //   chargeType: momoCallbackDto.chargeType,
+    //   chargeCode: momoCallbackDto.chargeCode,
+    //   regAmount: Number(momoCallbackDto.regAmount),
+    //   chargeAmount: momoCallbackDto.chargeAmount,
+    //   status: momoCallbackDto.status,
+    //   orderId: momoCallbackDto.orderId,
+    //   requestId: momoCallbackDto.requestId,
+    //   signature: momoCallbackDto.signature,
+    //   momoTransId: momoCallbackDto.momoTransId,
+    //   result: momoCallbackDto.result,
+    //   usdtRate: Number(momoCallbackDto.usdtRate),
+    //   usdAmount: Number(momoCallbackDto.usdAmount),
+    // };
 
-    console.log(data);
+    if (momoCallbackDto.status === 'success') {
+      if (
+        Number(momoCallbackDto.chargeAmount) >=
+        Number(momoCallbackDto.regAmount)
+      ) {
+        await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+          status: 'success',
+        });
+        const transaction = await this.databaseService.transaction.findUnique({
+          where: { chargeId: momoCallbackDto.chargeId },
+        });
 
-    return this.databaseService.momoCallback.create({
-      data,
-    });
+        if (transaction) {
+          await this.transactionTon({
+            walletAddress: transaction.walletAddress,
+            quantity: transaction.quantity,
+            chain: transaction.chain,
+            message: transaction.code,
+          });
+        }
+      } else if (
+        Number(momoCallbackDto.chargeAmount) < Number(momoCallbackDto.regAmount)
+      ) {
+        await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+          status: 'success',
+        });
+        this.notifyFrontend({
+          message:
+            'You have been charged less than the amount required, please try again',
+          status: 'success',
+        });
+      }
+    }
   }
 }

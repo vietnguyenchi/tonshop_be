@@ -209,15 +209,6 @@ export class TransactionService {
       return;
     }
 
-    await this.databaseService.momoCallback.create({
-      data: {
-        chargeId: momoCallbackDto.chargeId,
-        status: momoCallbackDto.status,
-        chargeAmount: momoCallbackDto.chargeAmount,
-        regAmount: momoCallbackDto.regAmount,
-      },
-    });
-
     const chargeAmount = Number(momoCallbackDto.chargeAmount);
     const regAmount = Number(momoCallbackDto.regAmount);
 

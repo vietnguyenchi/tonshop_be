@@ -59,7 +59,7 @@ export class TransactionController {
     }
   }
 
-  @Get('momo-callback')
+  @Get('momo_callback')
   async handleMomoCallback(
     @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
   ) {

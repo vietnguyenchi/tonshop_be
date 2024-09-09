@@ -190,14 +190,14 @@ export class TransactionService {
           chargeId,
           { status: status.status },
         );
-        if (updatedTransaction.status === 'success') {
-          this.transactionTon({
-            walletAddress: updatedTransaction.walletAddress,
-            quantity: updatedTransaction.quantity,
-            chain: updatedTransaction.chain,
-            message: updatedTransaction.code,
-          });
-        }
+        // if (updatedTransaction.status === 'success') {
+        //   this.transactionTon({
+        //     walletAddress: updatedTransaction.walletAddress,
+        //     quantity: updatedTransaction.quantity,
+        //     chain: updatedTransaction.chain,
+        //     message: updatedTransaction.code,
+        //   });
+        // }
         return updatedTransaction;
       }
     }

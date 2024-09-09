@@ -64,7 +64,10 @@ export class TransactionController {
     @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
   ) {
     try {
-      return await this.transactionService.createMomoCallback(momoCallbackDto);
+      await this.transactionService.createMomoCallback(momoCallbackDto);
+      return {
+        ...momoCallbackDto,
+      };
     } catch (error) {
       throw new HttpException(
         'Failed to process MoMo callback',

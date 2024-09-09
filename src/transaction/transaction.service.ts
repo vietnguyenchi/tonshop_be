@@ -15,10 +15,10 @@ import { TransactionGateway } from './transaction.gateway';
 export class TransactionService {
   constructor(
     private readonly databaseService: DatabaseService,
-    private readonly transactionGateway: TransactionGateway,
+    private transactionGateway: TransactionGateway,
   ) {}
 
-  private sleep(ms: number): Promise<void> {
+  private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
@@ -48,24 +48,21 @@ export class TransactionService {
     const walletContract = client.open(wallet);
     const seqno = await walletContract.getSeqno();
 
-    await walletContract.sendTransfer({
-      seqno,
-      secretKey: key.secretKey,
-      messages: [
-        internal({
-          to: createTonTransactionDto.walletAddress,
-          value: createTonTransactionDto.quantity.toString(),
-          body: createTonTransactionDto.message,
-          bounce: false,
-        }),
-      ],
-    });
-
     let currentSeqno = seqno;
-    while (currentSeqno === seqno) {
-      console.log('Waiting for transaction to be sent...');
+    const maxAttempts = 10;
+    let attempts = 0;
+
+    while (currentSeqno === seqno && attempts < maxAttempts) {
+      console.log(
+        `Waiting for transaction to be sent... Attempt ${attempts + 1}`,
+      );
       currentSeqno = await walletContract.getSeqno();
       await this.sleep(1000);
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      throw new Error('Transaction confirmation timeout');
     }
 
     // this.transactionGateway.notifyTransactionStatus({
@@ -114,13 +111,14 @@ export class TransactionService {
         transactionFee: createTransactionDto.transactionFee,
         exchangeRate: createTransactionDto.exchangeRate,
         requestId: createTransactionDto.requestId,
+        status: 'waiting', // Add initial status
       };
 
       return this.databaseService.transaction.create({
         data,
       });
     } catch (error) {
-      console.log(error);
+      console.error('Error creating transaction:', error);
       throw new HttpException(
         {
           status: 'error',
@@ -224,17 +222,34 @@ export class TransactionService {
       });
 
       if (transaction) {
-        const result = await this.transactionTon({
-          walletAddress: transaction.walletAddress,
-          quantity: transaction.quantity,
-          chain: transaction.chain,
-          message: transaction.code,
-        });
+        try {
+          const result = await this.transactionTon({
+            walletAddress: transaction.walletAddress,
+            quantity: transaction.quantity,
+            chain: transaction.chain,
+            message: transaction.code,
+          });
 
-        if (result.status === 'success') {
+          if (result.status === 'success') {
+            await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+              status: 'success',
+            });
+            this.transactionGateway.notifyTransactionStatus({
+              message: 'Transfer TON successfully',
+              status: 'success',
+              transactionDetails: {
+                walletAddress: transaction.walletAddress,
+                quantity: transaction.quantity,
+                chain: transaction.chain,
+                transaction: transaction,
+              },
+            });
+          }
+        } catch (error) {
+          console.error(error);
           this.transactionGateway.notifyTransactionStatus({
-            message: 'Transfer TON successfully',
-            status: 'success',
+            message: 'Error in TON transfer',
+            status: 'error',
             transactionDetails: {
               walletAddress: transaction.walletAddress,
               quantity: transaction.quantity,
@@ -245,10 +260,13 @@ export class TransactionService {
         }
       }
     } else {
+      await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+        status: 'success',
+      });
       this.transactionGateway.notifyTransactionStatus({
         message:
           'You have been charged less than the amount required, please try again',
-        status: 'success',
+        status: 'error',
       });
     }
   }

@@ -3,7 +3,10 @@ import { Server } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: 'https://ton-shop.onrender.com',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['*'],
+    credentials: true,
   },
 })
 export class TransactionGateway {

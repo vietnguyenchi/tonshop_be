@@ -14,7 +14,6 @@ export class TransactionGateway {
   server: Server;
 
   notifyTransactionStatus(status: any) {
-    console.log('Emitting transaction status:', status);
     this.server.emit('transactionStatus', status);
   }
 }

@@ -62,36 +62,6 @@ export class TransactionController {
     }
   }
 
-  @Get('momo_callback')
-  async handleMomoCallback(
-    @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
-  ) {
-    try {
-      const transaction =
-        await this.transactionService.createMomoCallback(momoCallbackDto);
-      if (transaction) {
-        this.transactionGateway.notifyTransactionStatus({
-          message: 'Transfer TON successfully',
-          status: 'success',
-          transactionDetails: {
-            walletAddress: transaction.walletAddress,
-            quantity: transaction.quantity,
-            chain: transaction.chain,
-            transaction: transaction,
-          },
-        });
-      }
-      return {
-        ...momoCallbackDto,
-      };
-    } catch (error) {
-      throw new HttpException(
-        'Failed to process MoMo callback',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
   @Get('waiting/:userId')
   async getWaitingTransactions(@Param('userId') userId: string) {
     try {
@@ -117,6 +87,37 @@ export class TransactionController {
     } catch (error) {
       throw new HttpException(
         'Failed to update transaction status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get('momo_callback')
+  async handleMomoCallback(
+    @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
+  ) {
+    try {
+      const transaction =
+        await this.transactionService.createMomoCallback(momoCallbackDto);
+      console.log(transaction);
+      if (transaction) {
+        this.transactionGateway.notifyTransactionStatus({
+          message: 'Transfer TON successfully',
+          status: 'success',
+          transactionDetails: {
+            walletAddress: transaction.walletAddress,
+            quantity: transaction.quantity,
+            chain: transaction.chain,
+            transaction: transaction,
+          },
+        });
+      }
+      return {
+        ...momoCallbackDto,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to process MoMo callback',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

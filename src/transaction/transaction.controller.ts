@@ -174,6 +174,12 @@ export class TransactionController {
         status: 'success',
         message: 'Transaction status updated',
       };
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Failed to process MoMo callback',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

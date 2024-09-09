@@ -72,6 +72,8 @@ export class TransactionController {
         message: 'MoMo callback received',
       });
 
+      console.log('MoMo callback received:', momoCallbackDto);
+      await this.transactionService.createMomoCallback(momoCallbackDto);
       return {
         ...momoCallbackDto,
         message: 'MoMo callback processed successfully',

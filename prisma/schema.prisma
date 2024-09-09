@@ -59,3 +59,31 @@ enum Status {
   unknow
   cancel
 }
+
+model MomoCallback {
+  id         String  @id @default(uuid())
+  chargeId   String?
+  chargeType String?
+
+  chargeCode String?
+
+  regAmount Float?
+
+  chargeAmount String?
+
+  status String?
+
+  orderId String?
+
+  requestId String?
+
+  signature String?
+
+  momoTransId String?
+
+  result String?
+
+  usdtRate Float?
+
+  usdAmount Float?
+}

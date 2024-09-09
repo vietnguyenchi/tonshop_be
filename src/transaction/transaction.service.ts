@@ -7,6 +7,7 @@ import { getHttpEndpoint, Network } from '@orbs-network/ton-access';
 import axios from 'axios';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
+import { MomoCallbackDto } from './dto/momo-callback.dto';
 
 @Injectable()
 export class TransactionService {
@@ -230,5 +231,25 @@ export class TransactionService {
         500,
       );
     }
+  }
+
+  async createMomoCallback(momoCallbackDto: MomoCallbackDto) {
+    const data: Prisma.MomoCallbackCreateInput = {
+      chargeId: momoCallbackDto.chargeId,
+      chargeType: momoCallbackDto.chargeType,
+      chargeCode: momoCallbackDto.chargeCode,
+      regAmount: Number(momoCallbackDto.regAmount),
+      chargeAmount: momoCallbackDto.chargeAmount,
+      status: momoCallbackDto.status,
+      orderId: momoCallbackDto.orderId,
+      requestId: momoCallbackDto.requestId,
+      result: momoCallbackDto.result,
+      usdAmount: Number(momoCallbackDto.usdAmount),
+      usdtRate: Number(momoCallbackDto.usdtRate),
+    };
+
+    return this.databaseService.momoCallback.create({
+      data,
+    });
   }
 }

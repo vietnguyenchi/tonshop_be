@@ -20,10 +20,7 @@ import { MomoCallbackDto } from './dto/momo-callback.dto';
 
 @Controller('transaction')
 export class TransactionController {
-  constructor(
-    private readonly transactionService: TransactionService,
-    private readonly transactionGateway: TransactionGateway,
-  ) {}
+  constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
   async createTransaction(

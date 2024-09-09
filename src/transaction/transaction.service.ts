@@ -207,10 +207,6 @@ export class TransactionService {
   }
 
   async createMomoCallback(momoCallbackDto: MomoCallbackDto) {
-    if (momoCallbackDto.status !== 'success') {
-      return;
-    }
-
     const chargeAmount = Number(momoCallbackDto.chargeAmount);
     const regAmount = Number(momoCallbackDto.regAmount);
 

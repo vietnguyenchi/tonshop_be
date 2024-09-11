@@ -62,18 +62,6 @@ export class TransactionController {
     }
   }
 
-  @Get('waiting/:userId')
-  async getWaitingTransactions(@Param('userId') userId: string) {
-    try {
-      return await this.transactionService.findWaitingTransactions(userId);
-    } catch (error) {
-      throw new HttpException(
-        'Failed to fetch waiting transactions',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
   @Patch(':chargeId')
   async updateTransactionStatus(
     @Param('chargeId') chargeId: string,
@@ -98,20 +86,10 @@ export class TransactionController {
   ) {
     try {
       const transaction =
-        await this.transactionService.createMomoCallback(momoCallbackDto);
-      console.log(transaction);
-      this.transactionGateway.notifyTransactionStatus({
-        message: 'Transfer TON successfully',
-        status: 'success',
-        transactionDetails: {
-          walletAddress: transaction.walletAddress,
-          quantity: transaction.quantity,
-          chain: transaction.chain,
-          transaction: transaction,
-        },
-      });
+        await this.transactionService.handleMomoCallback(momoCallbackDto);
       return {
         ...momoCallbackDto,
+        transactionId: transaction.id,
       };
     } catch (error) {
       throw new HttpException(
@@ -119,36 +97,6 @@ export class TransactionController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  @Get('test-callBack')
-  testCallBack() {
-    this.transactionGateway.notifyTransactionStatus({
-      status: 'success',
-      message: 'Transaction status updated',
-      transactionDetails: {
-        id: '1',
-        chargeId: '1838640',
-        amount: 12300,
-        code: '123456',
-        chargeType: 'momo',
-        redirect_ssl: 'https://google.com',
-        quantity: 0.1,
-        walletAddress: '0:b5ee9c7245978b723e0123456789abcdef',
-        chain: 'testnet',
-        status: 'success',
-        createdAt: '2024-05-01T00:00:00Z',
-        updatedAt: '2024-05-01T00:00:00Z',
-        userId: '5441070581',
-        exchangeRate: 125.889,
-        transactionFee: 0,
-      },
-    });
-
-    return {
-      status: 'success',
-      message: 'Transaction status updated',
-    };
   }
 
   @Get(':chargeId')

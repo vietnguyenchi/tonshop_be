@@ -199,7 +199,7 @@ export class TransactionService {
     }
   }
 
-  async createMomoCallback(momoCallbackDto: MomoCallbackDto) {
+  async handleMomoCallback(momoCallbackDto: MomoCallbackDto) {
     if (momoCallbackDto.status !== 'success') {
       return;
     }
@@ -225,35 +225,47 @@ export class TransactionService {
             message: transaction.code,
           });
 
-          await this.updateTransactionStatus(momoCallbackDto.chargeId, {
-            status: 'success',
-          });
-          return transaction;
+          const updatedTransaction = await this.updateTransactionStatus(
+            momoCallbackDto.chargeId,
+            {
+              status: 'success',
+            },
+          );
+
+          this.transactionGateway.notifyTransactionStatus(
+            {
+              message: 'Transaction successful',
+              status: 'success',
+              transactionDetails: updatedTransaction,
+            },
+            transaction.userId,
+          );
+
+          return updatedTransaction;
         } catch (error) {
           console.error(error);
-          this.transactionGateway.notifyTransactionStatus({
-            message: 'Error in TON transfer',
-            status: 'error',
-            transactionDetails: {
-              walletAddress: transaction.walletAddress,
-              quantity: transaction.quantity,
-              chain: transaction.chain,
-              transaction: transaction,
-            },
-          });
         }
       }
     } else {
-      await this.updateTransactionStatus(momoCallbackDto.chargeId, {
-        status: 'success',
-      });
-      this.transactionGateway.notifyTransactionStatus({
-        message:
-          'You have been charged less than the amount required, please try again',
-        status: 'error',
+      const transaction = await this.databaseService.transaction.findUnique({
+        where: { chargeId: momoCallbackDto.chargeId },
       });
 
-      return null;
+      if (transaction) {
+        await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+          status: 'success',
+        });
+        this.transactionGateway.notifyTransactionStatus(
+          {
+            message:
+              'You have been charged less than the amount required, please try again',
+            status: 'error',
+          },
+          transaction.userId,
+        );
+
+        return null;
+      }
     }
   }
 }

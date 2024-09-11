@@ -11,7 +11,7 @@ export class TransactionGateway {
   @WebSocketServer()
   server: Server;
 
-  @SubscribeMessage('joinRoom')
+  @SubscribeMessage('transactionStatus')
   handleJoinRoom(
     @ConnectedSocket() client: Socket,
     payload: { userId: string },

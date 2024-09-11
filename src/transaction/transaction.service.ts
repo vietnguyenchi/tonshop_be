@@ -108,12 +108,11 @@ export class TransactionService {
         user: { connect: { id: createTransactionDto.userId } },
         transactionFee: createTransactionDto.transactionFee,
         exchangeRate: createTransactionDto.exchangeRate,
-        status: 'waiting',
         code: response.data.data.code,
         email: createTransactionDto.email,
         phoneName: response.data.data.phoneName,
         phoneNumber: createTransactionDto.phoneNumberUser,
-        timeToExpired: response.data.data.timeToExpired,
+        timeToExpired: response.data.data.timeToExpired.parseInt(),
         phoneNum: response.data.data.phoneNum,
         qr_url: response.data.data.qr_url,
       };

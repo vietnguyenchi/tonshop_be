@@ -22,9 +22,6 @@ export class CreateTransactionDto {
   @IsNumber()
   quantity: number;
 
-  @IsEnum(Status)
-  status: Status;
-
   @IsNumber()
   timeToExpired: number;
 

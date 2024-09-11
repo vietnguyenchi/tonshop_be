@@ -112,7 +112,7 @@ export class TransactionService {
         email: createTransactionDto.email,
         phoneName: response.data.data.phoneName,
         phoneNumber: createTransactionDto.phoneNumberUser,
-        timeToExpired: response.data.data.timeToExpired.parseInt(),
+        timeToExpired: Number(response.data.data.timeToExpired),
         phoneNum: response.data.data.phoneNum,
         qr_url: response.data.data.qr_url,
       };

@@ -36,8 +36,14 @@ export class TransactionService {
       workchain: 0,
     });
 
+    const chain = await this.databaseService.chain.findUnique({
+      where: {
+        id: createTonTransactionDto.chain,
+      },
+    });
+
     const endpoint = await getHttpEndpoint({
-      network: createTonTransactionDto.chain as Network,
+      network: chain.value as Network,
     });
     const client = new TonClient({ endpoint });
 
@@ -64,7 +70,7 @@ export class TransactionService {
     let currentSeqno = seqno;
     while (currentSeqno === seqno) {
       console.log('Waiting for transaction to be confirmed...');
-      await this.sleep(1000);
+      await this.sleep(3000);
       currentSeqno = await walletContract.getSeqno();
     }
 
@@ -80,7 +86,7 @@ export class TransactionService {
         ).toString(),
       );
 
-      const signkey = 'asR4#Tas';
+      const signkey = process.env.SIGN_KEY;
       const chargeType = createTransactionDto.chargeType;
       const requestId = createTransactionDto.requestId;
 
@@ -92,20 +98,24 @@ export class TransactionService {
         `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/transaction/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
       );
 
-      const data: Prisma.transactionCreateInput = {
+      const data: Prisma.TransactionCreateInput = {
         chargeId: response.data.data.id.toString(),
-        chargeType: response.data.data.chargeType,
-        code: response.data.data.code,
+        bank_provider: response.data.data.chargeType,
         amount: amount,
-        redirect_ssl: response.data.data.redirect_ssl,
         quantity: createTransactionDto.quantity,
         chain: createTransactionDto.chain,
         walletAddress: createTransactionDto.walletAddress,
-        user: { connect: { telegramId: createTransactionDto.userId } },
+        user: { connect: { id: createTransactionDto.userId } },
         transactionFee: createTransactionDto.transactionFee,
         exchangeRate: createTransactionDto.exchangeRate,
-        requestId: createTransactionDto.requestId,
-        status: 'waiting', // Add initial status
+        status: 'waiting',
+        code: response.data.data.code,
+        email: createTransactionDto.email,
+        phoneName: response.data.data.phoneName,
+        phoneNumber: createTransactionDto.phoneNumberUser,
+        timeToExpired: response.data.data.timeToExpired,
+        phoneNum: response.data.data.phoneNum,
+        qr_url: response.data.data.qr_url,
       };
 
       return this.databaseService.transaction.create({
@@ -123,21 +133,12 @@ export class TransactionService {
     }
   }
 
-  async findWaitingTransactions(userId: string) {
-    return this.databaseService.transaction.findMany({
-      where: {
-        status: 'waiting',
-        userId,
-      },
-    });
-  }
-
   async updateTransactionStatus(
     chargeId: string,
-    data: Prisma.transactionUpdateInput,
+    data: Prisma.TransactionUpdateInput,
   ) {
     return this.databaseService.transaction.update({
-      where: { chargeId },
+      where: { chargeId: chargeId },
       data,
     });
   }
@@ -174,7 +175,7 @@ export class TransactionService {
   async findAllTransactions(userId: string) {
     return this.databaseService.transaction.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updateAt: 'desc' },
       take: 10,
     });
   }

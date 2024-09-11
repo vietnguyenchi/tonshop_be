@@ -25,7 +25,7 @@ model User {
   role         Role          @default(uesr)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  transactions transaction[]
+  transactions Transaction[]
 }
 
 enum Role {
@@ -33,24 +33,28 @@ enum Role {
   admin
 }
 
-model transaction {
-  id             String   @id @default(uuid())
-  chargeId       String   @unique
-  transactionFee Float    @default(0)
-  exchangeRate   Float
-  amount         Float
-  code           String
-  chargeType     String
-  redirect_ssl   String
-  quantity       Float
-  requestId      String
-  walletAddress  String
+model Transaction {
+  amount         Decimal
+  bank_provider  String
   chain          String
+  chargeId       String   @unique
+  code           String   @unique
+  createAt       DateTime @default(now())
+  email          String
+  exchangeRate   Decimal
+  id             String   @id @default(uuid())
+  phoneName      String
+  phoneNum       String
+  phoneNumber    String
+  qr_url         String
+  quantity       Float
   status         Status   @default(waiting)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  user           User     @relation(fields: [userId], references: [telegramId])
+  timeToExpired  Int
+  transactionFee Decimal
+  updateAt       DateTime @updatedAt
   userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  walletAddress  String
 }
 
 enum Status {
@@ -61,30 +65,17 @@ enum Status {
   cancel
 }
 
-model MomoCallback {
-  id         String  @id @default(uuid())
-  chargeId   String?
-  chargeType String?
+model Chain {
+  createAt DateTime    @updatedAt
+  id       String      @id @default(uuid())
+  name     String
+  value    String
+  status   StatusChain @default(active)
+  updateAt DateTime    @default(now())
+}
 
-  chargeCode String?
-
-  regAmount Float?
-
-  chargeAmount String?
-
-  status String?
-
-  orderId String?
-
-  requestId String?
-
-  signature String?
-
-  momoTransId String?
-
-  result String?
-
-  usdtRate Float?
-
-  usdAmount Float?
+enum StatusChain {
+  active
+  disable
+  maintenance
 }

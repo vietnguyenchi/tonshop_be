@@ -4,6 +4,7 @@ import { Status } from '@prisma/client';
 export class CreateTransactionDto {
   @IsString()
   requestId: string;
+
   @IsString()
   chargeType: string;
 

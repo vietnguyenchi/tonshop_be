@@ -26,9 +26,7 @@ export class TransactionController {
   ) {}
 
   @Post()
-  async createTransaction(
-    @Body(ValidationPipe) createTransactionDto: CreateTransactionDto,
-  ) {
+  async createTransaction(@Body() createTransactionDto: CreateTransactionDto) {
     try {
       return await this.transactionService.createTransaction(
         createTransactionDto,

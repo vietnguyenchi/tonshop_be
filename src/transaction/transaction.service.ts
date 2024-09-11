@@ -85,19 +85,15 @@ export class TransactionService {
             createTransactionDto.transactionFee,
         ).toString(),
       );
-
       const signkey = process.env.SIGN_KEY;
       const chargeType = createTransactionDto.chargeType;
       const requestId = createTransactionDto.requestId;
-
       const sign = CryptoJS.MD5(
         `${amount}${chargeType}${requestId}${signkey}`,
       ).toString();
-
       const response = await axios.get(
         `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/transaction/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
       );
-
       const data: Prisma.TransactionCreateInput = {
         chargeId: response.data.data.id.toString(),
         bank_provider: response.data.data.chargeType,
@@ -109,16 +105,20 @@ export class TransactionService {
         transactionFee: parseFloat(
           createTransactionDto.transactionFee.toString(),
         ),
-        exchangeRate: parseFloat(createTransactionDto.exchangeRate.toString()),
+        exchangeRate: parseFloat(
+          createTransactionDto.exchangeRate.toString(),
+        ).toFixed(2),
         code: response.data.data.code,
         email: createTransactionDto.email,
         phoneName: response.data.data.phoneName,
         phoneNumber: createTransactionDto.phoneNumberUser,
-        timeToExpired: Number(response.data.data.timeToExpired),
+        timeToExpired: response.data.data.timeToExpired,
         phoneNum: response.data.data.phoneNum,
         qr_url: response.data.data.qr_url,
       };
-
+      console.log(data);
+      console.log(typeof data.exchangeRate);
+      console.log(typeof data.timeToExpired);
       return this.databaseService.transaction.create({
         data,
       });

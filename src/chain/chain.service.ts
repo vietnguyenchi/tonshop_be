@@ -18,11 +18,7 @@ export class ChainService {
   }
 
   findAll() {
-    return this.databaseService.chain.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      } as Prisma.ChainOrderByWithRelationInput,
-    });
+    return this.databaseService.chain.findMany();
   }
 
   findOne(id: string) {

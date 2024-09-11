@@ -105,9 +105,7 @@ export class TransactionService {
         transactionFee: parseFloat(
           createTransactionDto.transactionFee.toString(),
         ),
-        exchangeRate: parseFloat(
-          createTransactionDto.exchangeRate.toString(),
-        ).toFixed(2),
+        exchangeRate: createTransactionDto.exchangeRate,
         code: response.data.data.code,
         email: createTransactionDto.email,
         phoneName: response.data.data.phoneName,
@@ -115,10 +113,8 @@ export class TransactionService {
         timeToExpired: response.data.data.timeToExpired,
         phoneNum: response.data.data.phoneNum,
         qr_url: response.data.data.qr_url,
+        redirect_ssl: response.data.data.redirect_ssl,
       };
-      console.log(data);
-      console.log(typeof data.exchangeRate);
-      console.log(typeof data.timeToExpired);
       return this.databaseService.transaction.create({
         data,
       });

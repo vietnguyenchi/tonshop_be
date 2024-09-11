@@ -55,6 +55,7 @@ model Transaction {
   userId         String
   user           User     @relation(fields: [userId], references: [id])
   walletAddress  String
+  redirect_ssl   String
 }
 
 enum Status {

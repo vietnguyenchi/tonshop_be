@@ -106,8 +106,10 @@ export class TransactionService {
         chain: createTransactionDto.chain,
         walletAddress: createTransactionDto.walletAddress,
         user: { connect: { id: createTransactionDto.userId } },
-        transactionFee: createTransactionDto.transactionFee,
-        exchangeRate: createTransactionDto.exchangeRate,
+        transactionFee: parseFloat(
+          createTransactionDto.transactionFee.toString(),
+        ),
+        exchangeRate: parseFloat(createTransactionDto.exchangeRate.toString()),
         code: response.data.data.code,
         email: createTransactionDto.email,
         phoneName: response.data.data.phoneName,

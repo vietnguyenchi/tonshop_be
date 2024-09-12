@@ -9,7 +9,6 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 import * as CryptoJS from 'crypto-js';
-import { Bot } from 'grammy';
 import { BotService } from 'src/bot/bot.service';
 
 @Injectable()

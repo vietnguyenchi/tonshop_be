@@ -8,10 +8,18 @@ import { TransactionModule } from './transaction/transaction.module';
 import { ChainService } from './chain/chain.service';
 import { ChainModule } from './chain/chain.module';
 import { BotModule } from './bot/bot.module';
+import { TransactionService } from './transaction/transaction.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UserModule, TransactionModule, ChainModule, BotModule],
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    UserModule,
+    TransactionModule,
+    ChainModule,
+    BotModule,
+  ],
   controllers: [AppController],
-  providers: [AppService, ChainService],
+  providers: [AppService, ChainService, TransactionService],
 })
 export class AppModule {}

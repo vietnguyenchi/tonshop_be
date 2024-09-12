@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
 import { BotService } from './bot.service';
-import { BotController } from './bot.controller';
 
 @Module({
-  controllers: [BotController],
-  providers: [BotService],
+  providers: [
+    {
+      provide: BotService,
+      useFactory: () => BotService.getInstance(process.env.BOT_TOKEN),
+    },
+  ],
+  exports: [BotService],
 })
 export class BotModule {}

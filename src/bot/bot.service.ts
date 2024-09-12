@@ -1,16 +1,28 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Bot } from 'grammy';
-import { TransactionService } from 'src/transaction/transaction.service';
 
 @Injectable()
-export class BotService implements OnModuleInit {
+export class BotService {
   private bot: Bot;
-  constructor() {
-    this.bot = new Bot(process.env.BOT_TOKEN);
+  private static instance: BotService;
+
+  constructor(token: string) {
+    this.bot = new Bot(token);
+  }
+
+  public static getInstance(token: string): BotService {
+    if (!BotService.instance) {
+      BotService.instance = new BotService(token);
+    }
+    return BotService.instance;
   }
 
   async onModuleInit() {
-    this.bot.start();
+    // Clear the update queue
+    this.bot.api.getUpdates({ offset: -1 }).then(() => {
+      // Start your bot here
+      this.bot.start();
+    });
   }
 
   async sendMessage(chatId: string, message: string) {

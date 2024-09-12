@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { TransactionController } from './transaction.controller';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseModule } from '../database/database.module';
+import { BotModule } from '../bot/bot.module'; // Adjust the import path as needed
 
 @Module({
-  controllers: [TransactionController],
-  providers: [TransactionService, DatabaseService],
+  imports: [
+    DatabaseModule,
+    BotModule, // Add this line to import BotModule
+  ],
+  providers: [TransactionService],
+  exports: [TransactionService],
 })
 export class TransactionModule {}

@@ -16,7 +16,7 @@ export class TransactionService {
   private bot: Bot;
 
   constructor(private readonly databaseService: DatabaseService) {
-    this.bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
+    this.bot = new Bot(process.env.BOT_TOKEN);
     this.bot.start();
   }
 

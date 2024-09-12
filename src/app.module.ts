@@ -7,9 +7,10 @@ import { UserModule } from './user/user.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { ChainService } from './chain/chain.service';
 import { ChainModule } from './chain/chain.module';
+import { BotModule } from './bot/bot.module';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, UserModule, TransactionModule, ChainModule],
+  imports: [DatabaseModule, AuthModule, UserModule, TransactionModule, ChainModule, BotModule],
   controllers: [AppController],
   providers: [AppService, ChainService],
 })

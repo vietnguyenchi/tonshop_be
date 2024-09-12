@@ -10,15 +10,14 @@ import { Prisma } from '@prisma/client';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 import * as CryptoJS from 'crypto-js';
 import { Bot } from 'grammy';
+import { BotService } from 'src/bot/bot.service';
 
 @Injectable()
 export class TransactionService {
-  private bot: Bot;
-
-  constructor(private readonly databaseService: DatabaseService) {
-    this.bot = new Bot(process.env.BOT_TOKEN);
-    this.bot.start();
-  }
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly botService: BotService,
+  ) {}
 
   private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -201,7 +200,7 @@ export class TransactionService {
 
   async sendTelegramMessage(telegramId: string, message: string) {
     try {
-      await this.bot.api.sendMessage(telegramId, message);
+      await this.botService.sendMessage(telegramId, message);
     } catch (error) {
       console.error('Error sending Telegram message:', error);
     }

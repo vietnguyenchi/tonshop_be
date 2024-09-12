@@ -5,7 +5,7 @@ import { BotService } from './bot.service';
   providers: [
     {
       provide: BotService,
-      useFactory: () => BotService.getInstance(process.env.BOT_TOKEN),
+      useFactory: () => BotService.getInstance(),
     },
   ],
   exports: [BotService],

@@ -2,26 +2,29 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Bot } from 'grammy';
 
 @Injectable()
-export class BotService {
-  private bot: Bot;
+export class BotService implements OnModuleInit {
   private static instance: BotService;
+  private bot: Bot;
 
-  constructor(token: string) {
+  private constructor() {
+    const token = process.env.BOT_TOKEN;
+    if (!token) {
+      throw new Error('BOT_TOKEN is not set in the environment variables');
+    }
     this.bot = new Bot(token);
   }
 
-  public static getInstance(token: string): BotService {
+  public static getInstance(): BotService {
     if (!BotService.instance) {
-      BotService.instance = new BotService(token);
+      BotService.instance = new BotService();
     }
     return BotService.instance;
   }
 
   async onModuleInit() {
-    // Clear the update queue
-    this.bot.api.getUpdates({ offset: -1 }).then(() => {
-      // Start your bot here
-      this.bot.start();
+    await this.bot.api.deleteWebhook();
+    this.bot.start({
+      onStart: () => console.log('Bot started'),
     });
   }
 
@@ -29,6 +32,7 @@ export class BotService {
     try {
       await this.bot.api.sendMessage(chatId, message);
     } catch (error) {
+      console.error('Failed to send message:', error);
       throw new Error('Failed to send message');
     }
   }

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Bot } from 'grammy';
+import { createBot } from './bot';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,8 +10,5 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
   await app.listen(3000);
-
-  const bot = new Bot(process.env.BOT_TOKEN);
-  bot.start();
 }
 bootstrap();

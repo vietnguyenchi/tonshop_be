@@ -11,11 +11,14 @@ import { MomoCallbackDto } from './dto/momo-callback.dto';
 import * as CryptoJS from 'crypto-js';
 import { Bot } from 'grammy';
 
-const bot = new Bot(process.env.BOT_TOKEN);
-
 @Injectable()
 export class TransactionService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private bot: Bot;
+
+  constructor(private readonly databaseService: DatabaseService) {
+    this.bot = new Bot(process.env.TELEGRAM_BOT_TOKEN);
+    this.bot.start();
+  }
 
   private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -196,6 +199,14 @@ export class TransactionService {
     }
   }
 
+  async sendTelegramMessage(telegramId: string, message: string) {
+    try {
+      await this.bot.api.sendMessage(telegramId, message);
+    } catch (error) {
+      console.error('Error sending Telegram message:', error);
+    }
+  }
+
   async handleMomoCallback(momoCallbackDto: MomoCallbackDto) {
     if (momoCallbackDto.status !== 'success') {
       return;
@@ -229,15 +240,25 @@ export class TransactionService {
             },
           );
 
-          await bot.api.sendMessage(
-            transaction.telegramId,
-            `Your transaction is successful. 
-            Code: ${transaction.code} 
-            Please save this code for future reference.`,
-          );
+          if (transaction.telegramId) {
+            const message = `Transaction success
+            Code: ${transaction.code}
+            Please save this code for future reference.
+            `;
+            await this.sendTelegramMessage(transaction.telegramId, message);
+          }
+
           return updatedTransaction;
         } catch (error) {
           console.error(error);
+          if (transaction.telegramId) {
+            const errorMessage =
+              'There was an error processing your transaction. Please contact support.';
+            await this.sendTelegramMessage(
+              transaction.telegramId,
+              errorMessage,
+            );
+          }
         }
       }
     } else {
@@ -249,13 +270,15 @@ export class TransactionService {
         await this.updateTransactionStatus(momoCallbackDto.chargeId, {
           status: 'success',
         });
+
+        // Send Telegram message about insufficient payment
+        if (transaction.telegramId) {
+          const message = `Your payment of ${chargeAmount} was received, but it's less than the required amount of ${regAmount}. Please contact support for assistance.`;
+          await this.sendTelegramMessage(transaction.telegramId, message);
+        }
+
         return null;
       }
-
-      await bot.api.sendMessage(
-        transaction.telegramId,
-        `You have transfer money less than the amount of the transaction. Please transfer the correct amount.`,
-      );
     }
   }
 }

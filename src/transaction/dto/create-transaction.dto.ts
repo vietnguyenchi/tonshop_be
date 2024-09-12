@@ -34,4 +34,7 @@ export class CreateTransactionDto {
 
   @IsString()
   walletAddress: string;
+
+  @IsString()
+  telegramId: string;
 }

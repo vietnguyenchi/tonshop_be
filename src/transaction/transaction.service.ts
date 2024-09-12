@@ -9,14 +9,13 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 import * as CryptoJS from 'crypto-js';
-import { TransactionGateway } from './transaction.gateway';
+import { Bot } from 'grammy';
+
+const bot = new Bot(process.env.BOT_TOKEN);
 
 @Injectable()
 export class TransactionService {
-  constructor(
-    private readonly databaseService: DatabaseService,
-    private transactionGateway: TransactionGateway,
-  ) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   private async sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -114,6 +113,7 @@ export class TransactionService {
         phoneNum: response.data.data.phoneNum,
         qr_url: response.data.data.qr_url,
         redirect_ssl: response.data.data.redirect_ssl,
+        telegramId: createTransactionDto.telegramId,
       };
       return this.databaseService.transaction.create({
         data,
@@ -157,7 +157,7 @@ export class TransactionService {
 
     if (transaction.status === 'waiting') {
       const status = await this.checkTransactionStatus(chargeId);
-      if (status.status !== 'Waiting') {
+      if (status.status !== 'waiting') {
         const updatedTransaction = await this.updateTransactionStatus(
           chargeId,
           { status: status.status },
@@ -229,13 +229,11 @@ export class TransactionService {
             },
           );
 
-          this.transactionGateway.notifyTransactionStatus(
-            {
-              message: 'Transaction successful',
-              status: 'success',
-              transactionDetails: updatedTransaction,
-            },
-            transaction.userId,
+          bot.api.sendMessage(
+            transaction.telegramId,
+            `Your transaction is successful. 
+            Code: ${transaction.code} 
+            Please save this code for future reference.`,
           );
 
           return updatedTransaction;
@@ -252,15 +250,6 @@ export class TransactionService {
         await this.updateTransactionStatus(momoCallbackDto.chargeId, {
           status: 'success',
         });
-        this.transactionGateway.notifyTransactionStatus(
-          {
-            message:
-              'You have been charged less than the amount required, please try again',
-            status: 'error',
-          },
-          transaction.userId,
-        );
-
         return null;
       }
     }

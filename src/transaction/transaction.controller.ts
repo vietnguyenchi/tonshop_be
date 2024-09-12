@@ -11,19 +11,14 @@ import {
   Param,
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { TransactionGateway } from './transaction.gateway';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { CreateTonTransactionDto } from './dto/create-tonTransaction.dto';
-import { TransactionQueryDto } from './dto/transaction-query.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 
 @Controller('transaction')
 export class TransactionController {
-  constructor(
-    private readonly transactionService: TransactionService,
-    private transactionGateway: TransactionGateway,
-  ) {}
+  constructor(private readonly transactionService: TransactionService) {}
 
   @Post()
   async createTransaction(@Body() createTransactionDto: CreateTransactionDto) {

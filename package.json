@@ -41,6 +41,7 @@
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
+    "grammy": "^1.30.0",
     "passport": "^0.7.0",
     "passport-telegram": "^1.0.0",
     "reflect-metadata": "^0.2.0",

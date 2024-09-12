@@ -229,13 +229,12 @@ export class TransactionService {
             },
           );
 
-          bot.api.sendMessage(
+          await bot.api.sendMessage(
             transaction.telegramId,
             `Your transaction is successful. 
             Code: ${transaction.code} 
             Please save this code for future reference.`,
           );
-
           return updatedTransaction;
         } catch (error) {
           console.error(error);
@@ -252,6 +251,11 @@ export class TransactionService {
         });
         return null;
       }
+
+      await bot.api.sendMessage(
+        transaction.telegramId,
+        `You have transfer money less than the amount of the transaction. Please transfer the correct amount.`,
+      );
     }
   }
 }

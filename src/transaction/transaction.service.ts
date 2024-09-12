@@ -172,7 +172,7 @@ export class TransactionService {
   async findAllTransactions(userId: string) {
     return this.databaseService.transaction.findMany({
       where: { userId },
-      orderBy: { updateAt: 'desc' },
+      orderBy: { createAt: 'desc' },
       take: 10,
     });
   }

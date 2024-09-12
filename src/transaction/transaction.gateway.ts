@@ -25,7 +25,10 @@ export class TransactionGateway {
     console.log(`Client joined room: ${transactionId}`);
   }
 
-  notifyTransactionStatus(transactionId: string, data: any) {
-    this.server.to(transactionId).emit('transactionStatus', data);
+  notifyTransactionStatus(
+    data: { message: string; status: string; transactionDetails?: any },
+    userId: string,
+  ) {
+    this.server.to(userId).emit('transactionStatus', data);
   }
 }

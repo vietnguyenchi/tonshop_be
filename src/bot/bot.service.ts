@@ -5,7 +5,7 @@ import { TransactionService } from 'src/transaction/transaction.service';
 @Injectable()
 export class BotService implements OnModuleInit {
   private bot: Bot;
-  constructor(private readonly transactionService: TransactionService) {
+  constructor() {
     this.bot = new Bot(process.env.BOT_TOKEN);
   }
 

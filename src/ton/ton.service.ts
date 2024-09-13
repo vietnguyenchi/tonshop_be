@@ -17,10 +17,11 @@ export class TonService {
       recipientAddress: string,
       amount: number,
       chainId: string,
-      message: string = '',
+      message: string,
    ): Promise<{ message: string; status: string }> {
       const network = await this.databaseService.chain.findUnique({
          where: { id: chainId },
+         select: { name: true, value: true, rpcUrl: true },
       });
 
       if (!network) {
@@ -33,7 +34,7 @@ export class TonService {
                recipientAddress,
                amount,
                message,
-               network.value,
+               network.rpcUrl,
             );
          case 'bsc':
             return this.transferEVM(recipientAddress, amount, network.rpcUrl);

@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import { CreateTonTransactionDto } from './dto/create-tonTransaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { MomoCallbackDto } from './dto/momo-callback.dto';
 
@@ -36,22 +35,6 @@ export class TransactionController {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
-    }
-  }
-
-  @Post('ton')
-  async createTonTransaction(
-    @Body(ValidationPipe) createTonTransactionDto: CreateTonTransactionDto,
-  ) {
-    try {
-      return await this.transactionService.transactionTon(
-        createTonTransactionDto,
-      );
-    } catch (error) {
-      throw new HttpException(
-        'Failed to create TON transaction',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
   }
 

@@ -10,4 +10,7 @@ export class CreateChainDto {
 
   @IsEnum(StatusChain)
   status: StatusChain;
+
+  @IsString()
+  rpcUrl: string;
 }

@@ -9,6 +9,7 @@ import { ChainService } from './chain/chain.service';
 import { ChainModule } from './chain/chain.module';
 import { BotModule } from './bot/bot.module';
 import { TransactionService } from './transaction/transaction.service';
+import { TonModule } from './ton/ton.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TransactionService } from './transaction/transaction.service';
     TransactionModule,
     ChainModule,
     BotModule,
+    TonModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChainService, TransactionService],

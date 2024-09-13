@@ -11,7 +11,8 @@ export class AuthService {
       private readonly jwtService: JwtService,
    ) {}
 
-   async login(loginDto: LoginDto): Promise<{ access_token: string }> {
+   // async login(loginDto: LoginDto): Promise<{ access_token: string }> {
+   async login(loginDto: LoginDto): Promise<User> {
       try {
          let user = await this.databaseService.user.findUnique({
             where: { telegramId: loginDto.telegramId },
@@ -31,10 +32,11 @@ export class AuthService {
             });
          }
 
-         const payload = { sub: user.id, username: user.username };
-         return {
-            access_token: this.jwtService.sign(payload),
-         };
+         // const payload = { sub: user.id, username: user.username };
+         // return {
+         //    access_token: this.jwtService.sign(payload),
+         // };
+         return user;
       } catch (error) {
          throw new UnauthorizedException();
       }

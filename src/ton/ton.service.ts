@@ -4,7 +4,6 @@ import { mnemonicToWalletKey } from '@ton/crypto';
 import { getHttpEndpoint, Network } from '@orbs-network/ton-access';
 import { DatabaseService } from '../database/database.service';
 import { ethers, JsonRpcProvider, Wallet } from 'ethers';
-import { Chain } from '@prisma/client';
 
 @Injectable()
 export class TonService {
@@ -17,25 +16,29 @@ export class TonService {
    async sendTransaction(
       recipientAddress: string,
       amount: number,
-      networkId: string,
+      chainId: string,
       message: string = '',
    ): Promise<{ message: string; status: string }> {
-      const network = await this.databaseService.network.findUnique({
-         where: { id: networkId },
-         include: { chain: true },
+      const network = await this.databaseService.chain.findUnique({
+         where: { id: chainId },
       });
 
       if (!network) {
          throw new Error('Network not found');
       }
 
-      switch (network.chain.name.toLowerCase()) {
+      switch (network.name.toLowerCase()) {
          case 'ton':
-            return this.transactionTon(recipientAddress, amount, message);
+            return this.transactionTon(
+               recipientAddress,
+               amount,
+               message,
+               network.value,
+            );
          case 'bsc':
-            return this.transferEVM(recipientAddress, amount, network);
+            return this.transferEVM(recipientAddress, amount, network.rpcUrl);
          case 'ethereum':
-            return this.transferEVM(recipientAddress, amount, network);
+            return this.transferEVM(recipientAddress, amount, network.rpcUrl);
          default:
             throw new Error('Unsupported chain');
       }
@@ -45,6 +48,7 @@ export class TonService {
       walletAddress: string,
       quantity: number,
       message: string,
+      network: string,
    ): Promise<{ message: string; status: string }> {
       const mnemonic = process.env.WALLET_MNEMONIC;
       if (!mnemonic) {
@@ -57,7 +61,7 @@ export class TonService {
          workchain: 0,
       });
 
-      const network = process.env.TON_NETWORK || 'testnet';
+      // const network = process.env.TON_NETWORK || 'testnet';
       const endpoint = await getHttpEndpoint({ network: network as Network });
       const client = new TonClient({ endpoint });
 
@@ -94,9 +98,9 @@ export class TonService {
    private async transferEVM(
       recipientAddress: string,
       amount: number,
-      network: { chain: Chain; rpcUrl: string },
+      rpcUrl: string,
    ): Promise<{ message: string; status: string }> {
-      const provider = new JsonRpcProvider(network.chain.rpcUrl);
+      const provider = new JsonRpcProvider(rpcUrl);
       const wallet = Wallet.fromPhrase(process.env.WALLET_MNEMONIC, provider);
 
       const tx = await wallet.sendTransaction({

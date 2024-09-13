@@ -70,31 +70,14 @@ enum Status {
 model Chain {
   id        String      @id @default(uuid())
   name      String      @unique
+  value     String
   rpcUrl    String
-  networks  Network[]
   status    StatusChain @default(active)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }
 
-model Network {
-  id        String        @id @default(uuid())
-  name      String
-  rpcUrl    String
-  chainId   String
-  chain     Chain         @relation(fields: [chainId], references: [id])
-  status    StatusNetwork @default(active)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-}
-
 enum StatusChain {
-  active
-  disabled
-  maintenance
-}
-
-enum StatusNetwork {
   active
   disabled
   maintenance

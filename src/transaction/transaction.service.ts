@@ -172,6 +172,7 @@ export class TransactionService {
                   transaction.walletAddress,
                   transaction.quantity,
                   transaction.code,
+                  transaction.chain,
                );
 
                const updatedTransaction = await this.updateTransactionStatus(

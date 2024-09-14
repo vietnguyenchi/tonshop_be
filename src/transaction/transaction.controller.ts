@@ -10,6 +10,7 @@ import {
    Patch,
    Param,
    UseGuards,
+   Delete,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
@@ -119,6 +120,20 @@ export class TransactionController {
       } catch (error) {
          throw new HttpException(
             'Failed to check transaction status',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+         );
+      }
+   }
+
+   @Delete(':chargeId')
+   // @Roles('admin')
+   @UseGuards()
+   async deleteTransaction(@Param('chargeId') chargeId: string) {
+      try {
+         return await this.transactionService.deleteTransaction(chargeId);
+      } catch (error) {
+         throw new HttpException(
+            'Failed to delete transaction',
             HttpStatus.INTERNAL_SERVER_ERROR,
          );
       }

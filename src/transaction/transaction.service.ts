@@ -223,4 +223,20 @@ export class TransactionService {
          }
       }
    }
+
+   async deleteTransaction(chargeId: string) {
+      try {
+         return this.databaseService.transaction.delete({
+            where: { chargeId },
+         });
+      } catch (error) {
+         throw new HttpException(
+            {
+               status: 'error',
+               message: error.message,
+            },
+            error.status,
+         );
+      }
+   }
 }

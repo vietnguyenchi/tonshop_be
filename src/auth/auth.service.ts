@@ -15,7 +15,7 @@ export class AuthService {
 
    async login(
       loginDto: LoginDto,
-   ): Promise<{ access_token: string; user: any }> {
+   ): Promise<{ access_token: string; user: User }> {
       try {
          let user = await this.databaseService.user.findUnique({
             where: { telegramId: loginDto.telegramId },
@@ -48,19 +48,15 @@ export class AuthService {
          };
          return {
             access_token: this.jwtService.sign(payload),
-            user: {
-               id: user.id,
-               username: user.username,
-               telegramId: user.telegramId,
-               role: user.role,
-            },
+            user: user,
          };
       } catch (error) {
+         console.log(error);
          throw new UnauthorizedException();
       }
    }
 
-   async validateUser(username: string, telegramId: string): Promise<User> {
+   async validateUser(telegramId: string): Promise<User> {
       const user = await this.databaseService.user.findUnique({
          where: { telegramId },
       });

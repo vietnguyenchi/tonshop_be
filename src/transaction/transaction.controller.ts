@@ -46,7 +46,7 @@ export class TransactionController {
    }
 
    @Patch(':chargeId')
-   @Roles('admin')
+   @Roles('admin', 'user')
    async updateTransactionStatus(
       @Param('chargeId') chargeId: string,
       @Body(ValidationPipe) updateTransactionDto: UpdateTransactionDto,
@@ -126,8 +126,7 @@ export class TransactionController {
    }
 
    @Delete(':chargeId')
-   // @Roles('admin')
-   @UseGuards()
+   @Roles('admin')
    async deleteTransaction(@Param('chargeId') chargeId: string) {
       try {
          return await this.transactionService.deleteTransaction(chargeId);

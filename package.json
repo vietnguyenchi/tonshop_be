@@ -6,7 +6,7 @@
    "private": true,
    "license": "UNLICENSED",
    "scripts": {
-      "build": "concurrently \"npx nest build\" \"prisma generate\"",
+      "build": "npx nest build",
       "prepare": "npm install && prisma generate",
       "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
       "start": "nest start",

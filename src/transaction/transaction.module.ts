@@ -6,9 +6,9 @@ import { BotModule } from '../bot/bot.module';
 import { TonModule } from '../ton/ton.module';
 
 @Module({
-  imports: [DatabaseModule, BotModule, TonModule],
-  controllers: [TransactionController],
-  providers: [TransactionService],
-  exports: [TransactionService],
+   imports: [DatabaseModule, BotModule, TonModule],
+   controllers: [TransactionController],
+   providers: [TransactionService],
+   exports: [TransactionService],
 })
 export class TransactionModule {}

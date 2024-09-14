@@ -15,7 +15,7 @@ export class TonService {
 
    async sendTransaction(
       recipientAddress: string,
-      amount: number,
+      quantity: number,
       chainId: string,
       message: string,
    ): Promise<{ message: string; status: string }> {
@@ -28,18 +28,18 @@ export class TonService {
          throw new Error('Network not found');
       }
 
-      switch (network.name.toLowerCase()) {
+      switch (network.value.toLowerCase()) {
          case 'ton':
             return this.transactionTon(
                recipientAddress,
-               amount,
+               quantity,
                message,
                network.rpcUrl,
             );
          case 'bsc':
-            return this.transferEVM(recipientAddress, amount, network.rpcUrl);
+            return this.transferEVM(recipientAddress, quantity, network.rpcUrl);
          case 'ethereum':
-            return this.transferEVM(recipientAddress, amount, network.rpcUrl);
+            return this.transferEVM(recipientAddress, quantity, network.rpcUrl);
          default:
             throw new Error('Unsupported chain');
       }

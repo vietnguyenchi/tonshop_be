@@ -16,20 +16,21 @@ datasource db {
 model User {
   id           String        @id @default(uuid())
   telegramId   String        @unique
-  username     String
+  username     String        @unique
+  password     String
   firstName    String
   lastName     String
   hash         String
   authDate     DateTime
   photoUrl     String?
-  role         Role          @default(uesr)
+  role         Role          @default(user)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
 }
 
 enum Role {
-  uesr
+  user
   admin
 }
 
@@ -81,4 +82,18 @@ enum StatusChain {
   active
   disabled
   maintenance
+}
+
+model Wallet {
+  id         String       @id @default(uuid())
+  name       String       @unique
+  privateKey String
+  status     StatusWallet @default(disabled)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+enum StatusWallet {
+  active
+  disabled
 }

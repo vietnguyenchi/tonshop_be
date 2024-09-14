@@ -51,7 +51,11 @@ export class TonService {
       message: string,
       network: string,
    ): Promise<{ message: string; status: string }> {
-      const mnemonic = process.env.WALLET_MNEMONIC;
+      const { privateKey: mnemonic } =
+         await this.databaseService.wallet.findFirst({
+            where: { status: 'active' },
+            select: { privateKey: true },
+         });
       if (!mnemonic) {
          throw new Error('Wallet mnemonic not found in environment variables');
       }
@@ -63,7 +67,6 @@ export class TonService {
          workchain: 0,
       });
 
-      // const network = process.env.TON_NETWORK || 'testnet';
       const endpoint = await getHttpEndpoint({
          network: (network as Network) || 'testnet',
       });

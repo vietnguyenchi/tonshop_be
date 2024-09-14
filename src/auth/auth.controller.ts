@@ -1,17 +1,36 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import {
+   Controller,
+   Request,
+   Post,
+   UseGuards,
+   Body,
+   Res,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { User } from '@prisma/client';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-   constructor(private readonly authService: AuthService) {}
+   constructor(private authService: AuthService) {}
 
+   @UseGuards(AuthGuard('local'))
    @Post('login')
-   async login(@Body() loginDto: LoginDto): Promise<User> {
-      return this.authService.login(loginDto);
+   async login(
+      @Body() loginDto: LoginDto,
+      @Res({ passthrough: true }) response: Response,
+   ) {
+      const { access_token, user } = await this.authService.login(loginDto);
+
+      // Set the access token as an HTTP-only cookie
+      response.cookie('access_token', access_token, {
+         httpOnly: true,
+         secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+         sameSite: 'strict',
+         maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+
+      return { user };
    }
-   // async login(@Body() loginDto: LoginDto): Promise<{ access_token: string }> {
-   //    return this.authService.login(loginDto);
-   // }
 }

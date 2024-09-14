@@ -1,66 +1,56 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  HttpException,
-  Delete,
+   Controller,
+   Get,
+   Post,
+   Body,
+   Patch,
+   Param,
+   HttpException,
+   Delete,
+   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
 import { User } from './interfaces/user.interface';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { Roles } from 'src/auth/roles.decorator';
+import { RolesGuard } from 'src/auth/roles.guard';
 
 @Controller('user')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  async create(@Body() createUserDto: Prisma.UserCreateInput): Promise<User> {
-    try {
+   @Post()
+   @Roles('admin', 'user')
+   async create(@Body() createUserDto: Prisma.UserCreateInput): Promise<User> {
       return this.userService.create(createUserDto);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
+   }
 
-  @Get()
-  async findAll(): Promise<User[]> {
-    try {
+   @Get()
+   @Roles('admin')
+   async findAll(): Promise<User[]> {
       return this.userService.findAll();
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
+   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<User> {
-    try {
+   @Get(':id')
+   @Roles('admin')
+   async findOne(@Param('id') id: string): Promise<User> {
       return this.userService.findOne(id);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
+   }
 
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateUserDto: Prisma.UserUpdateInput,
-  ): Promise<User> {
-    try {
+   @Patch(':id')
+   @Roles('admin')
+   async update(
+      @Param('id') id: string,
+      @Body() updateUserDto: Prisma.UserUpdateInput,
+   ): Promise<User> {
       return this.userService.update(id, updateUserDto);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
+   }
 
-  @Delete(':telegramId')
-  async remove(@Param('telegramId') telegramId: string) {
-    try {
-      return await this.userService.remove(telegramId);
-    } catch (error) {
-      throw new HttpException(error.message, error.status);
-    }
-  }
+   @Delete(':id')
+   @Roles('admin')
+   async remove(@Param('id') id: string) {
+      return this.userService.remove(id);
+   }
 }

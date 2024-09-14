@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+   Module,
+   MiddlewareConsumer,
+   NestModule,
+   RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -10,18 +15,29 @@ import { ChainModule } from './chain/chain.module';
 import { BotModule } from './bot/bot.module';
 import { TransactionService } from './transaction/transaction.service';
 import { TonModule } from './ton/ton.module';
+import { WalletModule } from './wallet/wallet.module';
+// import { AuthMiddleware } from './auth/auth.middleware';
 
 @Module({
-  imports: [
-    DatabaseModule,
-    AuthModule,
-    UserModule,
-    TransactionModule,
-    ChainModule,
-    BotModule,
-    TonModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService, ChainService, TransactionService],
+   imports: [
+      DatabaseModule,
+      AuthModule,
+      UserModule,
+      TransactionModule,
+      ChainModule,
+      BotModule,
+      TonModule,
+      WalletModule,
+   ],
+   controllers: [AppController],
+   providers: [AppService, ChainService, TransactionService],
 })
 export class AppModule {}
+// export class AppModule implements NestModule {
+//    configure(consumer: MiddlewareConsumer) {
+//       consumer
+//          .apply(AuthMiddleware)
+//          .exclude({ path: 'auth/login', method: RequestMethod.POST })
+//          .forRoutes({ path: '*', method: RequestMethod.ALL });
+//    }
+// }

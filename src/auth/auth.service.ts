@@ -3,42 +3,100 @@ import { User } from '@prisma/client';
 import { LoginDto } from './dto/login.dto';
 import { DatabaseService } from './../database/database.service';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { LoginAdminDto } from './dto/login-admin.dto';
 
 @Injectable()
 export class AuthService {
    constructor(
-      private readonly databaseService: DatabaseService,
-      private readonly jwtService: JwtService,
+      private databaseService: DatabaseService,
+      private jwtService: JwtService,
    ) {}
 
-   // async login(loginDto: LoginDto): Promise<{ access_token: string }> {
-   async login(loginDto: LoginDto): Promise<User> {
+   async login(
+      loginDto: LoginDto,
+   ): Promise<{ access_token: string; user: any }> {
       try {
          let user = await this.databaseService.user.findUnique({
             where: { telegramId: loginDto.telegramId },
          });
 
          if (!user) {
-            user = await this.databaseService.user.create({
-               data: {
-                  telegramId: loginDto.telegramId,
-                  username: loginDto.username,
-                  firstName: loginDto.firstName,
-                  lastName: loginDto.lastName,
-                  photoUrl: loginDto.photoUrl,
-                  hash: loginDto.hash,
-                  authDate: loginDto.authDate,
-               },
-            });
+            const userData = {
+               telegramId: loginDto.telegramId,
+               username: loginDto.username,
+               firstName: loginDto.firstName,
+               lastName: loginDto.lastName,
+               password: loginDto.password,
+               photoUrl: loginDto.photoUrl,
+               hash: loginDto.hash,
+               authDate: loginDto.authDate,
+            };
+
+            if (loginDto.password) {
+               const hashedPassword = await bcrypt.hash(loginDto.password, 10);
+               userData.password = hashedPassword;
+            }
+
+            user = await this.databaseService.user.create({ data: userData });
          }
 
-         // const payload = { sub: user.id, username: user.username };
-         // return {
-         //    access_token: this.jwtService.sign(payload),
-         // };
-         return user;
+         const payload = {
+            username: user.username,
+            telegramId: user.telegramId,
+            role: user.role,
+         };
+         return {
+            access_token: this.jwtService.sign(payload),
+            user: {
+               id: user.id,
+               username: user.username,
+               telegramId: user.telegramId,
+               role: user.role,
+            },
+         };
       } catch (error) {
          throw new UnauthorizedException();
       }
+   }
+
+   async validateUser(username: string, telegramId: string): Promise<User> {
+      const user = await this.databaseService.user.findUnique({
+         where: { telegramId },
+      });
+      return user;
+   }
+
+   async loginAdmin(
+      loginAdminDto: LoginAdminDto,
+   ): Promise<{ access_token: string }> {
+      try {
+         const user = await this.databaseService.user.findUnique({
+            where: { username: loginAdminDto.username },
+         });
+
+         if (!user) {
+            throw new UnauthorizedException();
+         }
+
+         const isMatch = await bcrypt.compare(
+            loginAdminDto.password,
+            user.password,
+         );
+
+         if (!isMatch) {
+            throw new UnauthorizedException();
+         }
+
+         const payload = {
+            username: user.username,
+            telegramId: user.telegramId,
+            role: user.role,
+         };
+
+         return {
+            access_token: this.jwtService.sign(payload),
+         };
+      } catch (error) {}
    }
 }

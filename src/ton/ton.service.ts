@@ -57,13 +57,16 @@ export class TonService {
       }
 
       const key = await mnemonicToWalletKey(mnemonic.split(' '));
+
       const wallet = WalletContractV4.create({
          publicKey: key.publicKey,
          workchain: 0,
       });
 
       // const network = process.env.TON_NETWORK || 'testnet';
-      const endpoint = await getHttpEndpoint({ network: network as Network });
+      const endpoint = await getHttpEndpoint({
+         network: (network as Network) || 'testnet',
+      });
       const client = new TonClient({ endpoint });
 
       if (!(await client.isContractDeployed(wallet.address))) {
@@ -78,7 +81,7 @@ export class TonService {
          seqno: seqno,
          messages: [
             internal({
-               to: walletAddress,
+               to: walletAddress.toString(),
                value: quantity.toString(),
                body: message,
                bounce: false,
@@ -86,12 +89,11 @@ export class TonService {
          ],
       });
 
-      let currentSeqno = seqno;
-      while (currentSeqno === seqno) {
-         console.log('Waiting for transaction to be confirmed...');
-         await this.sleep(3000);
-         currentSeqno = await walletContract.getSeqno();
-      }
+      // let currentSeqno = seqno;
+      // while (currentSeqno === seqno) {
+      //    await this.sleep(1000);
+      //    currentSeqno = await walletContract.getSeqno();
+      // }
 
       return { message: 'Transaction sent', status: 'success' };
    }

@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { TonService } from './ton.service';
 import { TransferTonDto } from './dto/transfer-ton.dto';
+import { TransactionTonDto } from './dto/transaction-ton.dto';
 
 @Controller('ton')
 export class TonController {
@@ -13,6 +14,16 @@ export class TonController {
          createTransactionDto.quantity,
          createTransactionDto.chainId,
          createTransactionDto.message,
+      );
+   }
+
+   @Post('ton-coin')
+   async transactionTon(@Body() transactionTonDto: TransactionTonDto) {
+      return this.tonService.transactionTon(
+         transactionTonDto.walletAddress,
+         transactionTonDto.quantity,
+         transactionTonDto.message,
+         transactionTonDto.network,
       );
    }
 }

@@ -196,8 +196,7 @@ export class TransactionService {
             } catch (error) {
                console.error(error);
                if (transaction.telegramId) {
-                  const errorMessage =
-                     'There was an error processing your transaction. Please contact support.';
+                  const errorMessage = `There was an error processing your transaction. Please contact support with code: ${transaction.code}`;
                   await this.sendTelegramMessage(
                      transaction.telegramId,
                      errorMessage,

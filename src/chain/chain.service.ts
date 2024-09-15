@@ -19,7 +19,11 @@ export class ChainService {
 
    async findAll() {
       try {
-         return this.databaseService.chain.findMany();
+         return this.databaseService.chain.findMany({
+            orderBy: {
+               status: 'asc',
+            },
+         });
       } catch (error) {
          throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
       }

@@ -114,19 +114,55 @@ export class TransactionService {
       return transaction;
    }
 
-   async findAllTransactionsByUserId(userId: string) {
-      return this.databaseService.transaction.findMany({
-         where: { userId },
-         orderBy: { createAt: 'desc' },
-         take: 10,
-      });
+   async findAllTransactionsByUserId(
+      userId: string,
+      page: number = 1,
+      limit: number = 10,
+   ) {
+      const skip = (page - 1) * limit;
+      const [transactions, total] = await Promise.all([
+         this.databaseService.transaction.findMany({
+            where: { userId },
+            orderBy: { createAt: 'desc' },
+            take: limit,
+            skip: skip,
+         }),
+         this.databaseService.transaction.count({
+            where: { userId },
+         }),
+      ]);
+
+      return {
+         data: transactions,
+         meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+         },
+      };
    }
 
-   async findAllTransactions() {
-      return this.databaseService.transaction.findMany({
-         orderBy: { createAt: 'desc' },
-         take: 10,
-      });
+   async findAllTransactions(page: number = 1, limit: number = 10) {
+      const skip = (page - 1) * limit;
+      const [transactions, total] = await Promise.all([
+         this.databaseService.transaction.findMany({
+            orderBy: { createAt: 'desc' },
+            take: limit,
+            skip: skip,
+         }),
+         this.databaseService.transaction.count(),
+      ]);
+
+      return {
+         data: transactions,
+         meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+         },
+      };
    }
 
    async checkTransactionStatus(chargeId: string) {
@@ -231,19 +267,19 @@ export class TransactionService {
       }
    }
 
-   async deleteTransaction(chargeId: string) {
-      try {
-         return this.databaseService.transaction.delete({
-            where: { chargeId },
-         });
-      } catch (error) {
-         throw new HttpException(
-            {
-               status: 'error',
-               message: error.message,
-            },
-            error.status,
-         );
-      }
-   }
+   // async deleteTransaction(chargeId: string) {
+   //    try {
+   //       return this.databaseService.transaction.delete({
+   //          where: { chargeId },
+   //       });
+   //    } catch (error) {
+   //       throw new HttpException(
+   //          {
+   //             status: 'error',
+   //             message: error.message,
+   //          },
+   //          error.status,
+   //       );
+   //    }
+   // }
 }

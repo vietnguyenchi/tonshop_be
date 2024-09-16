@@ -102,17 +102,26 @@ export class TransactionController {
    @Get()
    @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin')
-   async findAllTransactions() {
-      return await this.transactionService.findAllTransactions();
+   async findAllTransactions(
+      @Query('page') page: number = 1,
+      @Query('limit') limit: number = 10,
+   ) {
+      return await this.transactionService.findAllTransactions(page, limit);
    }
 
    @Get('all/:userId')
    @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
-   async findAllTransactionsByUserId(@Param('userId') userId: string) {
+   async findAllTransactionsByUserId(
+      @Param('userId') userId: string,
+      @Query('page') page: number = 1,
+      @Query('limit') limit: number = 10,
+   ) {
       try {
          return await this.transactionService.findAllTransactionsByUserId(
             userId,
+            page,
+            limit,
          );
       } catch (error) {
          throw new HttpException(
@@ -136,17 +145,17 @@ export class TransactionController {
       }
    }
 
-   @Delete(':chargeId')
-   @UseGuards(JwtAuthGuard, RolesGuard)
-   @Roles('admin')
-   async deleteTransaction(@Param('chargeId') chargeId: string) {
-      try {
-         return await this.transactionService.deleteTransaction(chargeId);
-      } catch (error) {
-         throw new HttpException(
-            'Failed to delete transaction',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-         );
-      }
-   }
+   // @Delete(':chargeId')
+   // @UseGuards(JwtAuthGuard, RolesGuard)
+   // @Roles('admin')
+   // async deleteTransaction(@Param('chargeId') chargeId: string) {
+   //    try {
+   //       return await this.transactionService.deleteTransaction(chargeId);
+   //    } catch (error) {
+   //       throw new HttpException(
+   //          'Failed to delete transaction',
+   //          HttpStatus.INTERNAL_SERVER_ERROR,
+   //       );
+   //    }
+   // }
 }

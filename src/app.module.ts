@@ -18,7 +18,6 @@ import { TonModule } from './ton/ton.module';
 import { WalletModule } from './wallet/wallet.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { JwtService } from '@nestjs/jwt';
-// import { AuthMiddleware } from './auth/auth.middleware';
 
 @Module({
    imports: [
@@ -38,9 +37,11 @@ export class AppModule implements NestModule {
    configure(consumer: MiddlewareConsumer) {
       consumer
          .apply(AuthMiddleware)
-         .exclude({ path: 'auth/login', method: RequestMethod.POST })
-         .exclude({ path: 'auth/login-admin', method: RequestMethod.POST })
-         .exclude({ path: 'transaction/:id', method: RequestMethod.GET })
-         .forRoutes({ path: '*', method: RequestMethod.ALL });
+         .exclude(
+            { path: 'auth/login', method: RequestMethod.POST },
+            { path: 'auth/login-admin', method: RequestMethod.POST },
+            { path: 'transaction/:id', method: RequestMethod.GET },
+         )
+         .forRoutes('*');
    }
 }

@@ -40,7 +40,7 @@ export class UserController {
    }
 
    @Patch(':id')
-   @Roles('admin')
+   @Roles('user')
    async update(
       @Param('id') id: string,
       @Body() updateUserDto: Prisma.UserUpdateInput,

@@ -21,11 +21,11 @@ import { MomoCallbackDto } from './dto/momo-callback.dto';
 import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('transaction')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class TransactionController {
    constructor(private readonly transactionService: TransactionService) {}
 
    @Post()
+   @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
    async createTransaction(@Body() createTransactionDto: CreateTransactionDto) {
       try {
@@ -46,6 +46,7 @@ export class TransactionController {
    }
 
    @Patch(':chargeId')
+   @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
    async updateTransactionStatus(
       @Param('chargeId') chargeId: string,
@@ -84,13 +85,12 @@ export class TransactionController {
       }
    }
 
-   @Get(':chargeId')
+   @Get(':id')
+   @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
-   async getTransactionByChargeId(@Param('chargeId') chargeId: string) {
+   async getTransactionById(@Param('id') id: string) {
       try {
-         return await this.transactionService.findTransactionByChargeId(
-            chargeId,
-         );
+         return await this.transactionService.findTransactionById(id);
       } catch (error) {
          throw new HttpException(
             'Failed to find transaction',
@@ -100,6 +100,7 @@ export class TransactionController {
    }
 
    @Get('all/:userId')
+   @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
    async findAllTransactions(@Param('userId') userId: string) {
       try {
@@ -113,6 +114,7 @@ export class TransactionController {
    }
 
    @Get('check/:chargeId')
+   @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
    async checkTransactionStatus(@Param('chargeId') chargeId: string) {
       try {
@@ -126,6 +128,7 @@ export class TransactionController {
    }
 
    @Delete(':chargeId')
+   @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin')
    async deleteTransaction(@Param('chargeId') chargeId: string) {
       try {

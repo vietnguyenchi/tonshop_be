@@ -85,9 +85,9 @@ export class TransactionService {
       });
    }
 
-   async findTransactionByChargeId(chargeId: string) {
+   async findTransactionById(id: string) {
       const transaction = await this.databaseService.transaction.findUnique({
-         where: { chargeId },
+         where: { id },
       });
 
       if (!transaction) {
@@ -101,10 +101,10 @@ export class TransactionService {
       }
 
       if (transaction.status === 'waiting') {
-         const status = await this.checkTransactionStatus(chargeId);
+         const status = await this.checkTransactionStatus(transaction.chargeId);
          if (status.status !== 'waiting') {
             const updatedTransaction = await this.updateTransactionStatus(
-               chargeId,
+               transaction.chargeId,
                { status: status.status },
             );
             return updatedTransaction;
@@ -168,11 +168,11 @@ export class TransactionService {
 
          if (transaction) {
             try {
-               const result = await this.tonService.transactionTon(
+               const result = await this.tonService.sendTransaction(
                   transaction.walletAddress,
                   transaction.quantity,
-                  transaction.code,
                   transaction.chain,
+                  transaction.code,
                );
 
                const updatedTransaction = await this.updateTransactionStatus(

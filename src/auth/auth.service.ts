@@ -1,10 +1,17 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+   HttpException,
+   HttpStatus,
+   Injectable,
+   NotFoundException,
+   UnauthorizedException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import { LoginDto } from './dto/login.dto';
 import { DatabaseService } from './../database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginAdminDto } from './dto/login-admin.dto';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +37,7 @@ export class AuthService {
                password: loginDto.password,
                photoUrl: loginDto.photoUrl,
                hash: loginDto.hash,
-               authDate: loginDto.authDate,
+               authDate: new Date(loginDto.authDate).toISOString(),
             };
 
             if (loginDto.password) {
@@ -52,7 +59,7 @@ export class AuthService {
          };
       } catch (error) {
          console.log(error);
-         throw new UnauthorizedException();
+         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
       }
    }
 
@@ -72,7 +79,7 @@ export class AuthService {
          });
 
          if (!user) {
-            throw new UnauthorizedException();
+            throw new NotFoundException('User not found');
          }
 
          const isMatch = await bcrypt.compare(
@@ -81,9 +88,8 @@ export class AuthService {
          );
 
          if (!isMatch) {
-            throw new UnauthorizedException();
+            throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
          }
-
          const payload = {
             username: user.username,
             telegramId: user.telegramId,
@@ -93,6 +99,9 @@ export class AuthService {
          return {
             access_token: this.jwtService.sign(payload),
          };
-      } catch (error) {}
+      } catch (error) {
+         console.log(error);
+         throw new HttpException('Login failed', HttpStatus.BAD_REQUEST);
+      }
    }
 }

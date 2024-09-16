@@ -57,7 +57,7 @@ export class TonService {
             select: { privateKey: true },
          });
       if (!mnemonic) {
-         throw new Error('Wallet mnemonic not found in environment variables');
+         throw new Error('Wallet mnemonic not found ');
       }
 
       const key = await mnemonicToWalletKey(mnemonic.split(' '));
@@ -68,10 +68,9 @@ export class TonService {
       });
 
       const endpoint = await getHttpEndpoint({
-         network: (network as Network) || 'testnet',
+         network: network.toLowerCase() as Network,
       });
-      const client = new TonClient({ endpoint });
-
+      const client = new TonClient({ endpoint, timeout: 60000 });
       if (!(await client.isContractDeployed(wallet.address))) {
          throw new Error('Wallet not deployed');
       }

@@ -10,6 +10,16 @@ export class WalletService {
 
    async create(createWalletDto: CreateWalletDto) {
       try {
+         if (createWalletDto.status === 'active') {
+            await this.databaseService.wallet.updateMany({
+               where: {
+                  status: 'active',
+               },
+               data: {
+                  status: 'disabled',
+               },
+            });
+         }
          const wallet = await this.databaseService.wallet.create({
             data: {
                ...createWalletDto,

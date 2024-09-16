@@ -99,12 +99,21 @@ export class TransactionController {
       }
    }
 
+   @Get()
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   @Roles('admin')
+   async findAllTransactions() {
+      return await this.transactionService.findAllTransactions();
+   }
+
    @Get('all/:userId')
    @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
-   async findAllTransactions(@Param('userId') userId: string) {
+   async findAllTransactionsByUserId(@Param('userId') userId: string) {
       try {
-         return await this.transactionService.findAllTransactions(userId);
+         return await this.transactionService.findAllTransactionsByUserId(
+            userId,
+         );
       } catch (error) {
          throw new HttpException(
             'Failed to find all transactions',

@@ -20,9 +20,7 @@ export class AuthService {
       private jwtService: JwtService,
    ) {}
 
-   async login(
-      loginDto: LoginDto,
-   ): Promise<{ access_token: string; user: User }> {
+   async login(loginDto: LoginDto): Promise<{ access_token: string }> {
       try {
          let user = await this.databaseService.user.findUnique({
             where: { telegramId: loginDto.telegramId },
@@ -55,7 +53,6 @@ export class AuthService {
          };
          return {
             access_token: this.jwtService.sign(payload),
-            user: user,
          };
       } catch (error) {
          console.log(error);

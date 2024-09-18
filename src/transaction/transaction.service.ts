@@ -16,10 +16,6 @@ export class TransactionService {
       private readonly tonService: TonService,
    ) {}
 
-   private async sleep(ms: number): Promise<void> {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-   }
-
    async createTransaction(createTransactionDto: CreateTransactionDto) {
       try {
          const amount = parseInt(
@@ -114,21 +110,21 @@ export class TransactionService {
       return transaction;
    }
 
-   async findAllTransactionsByUserId(
-      userId: string,
+   async findAllTransactionsByTelegramId(
+      telegramId: string,
       page: number = 1,
       limit: number = 10,
    ) {
       const skip = (page - 1) * limit;
       const [transactions, total] = await Promise.all([
          this.databaseService.transaction.findMany({
-            where: { userId },
+            where: { telegramId },
             orderBy: { createAt: 'desc' },
             take: limit,
             skip: skip,
          }),
          this.databaseService.transaction.count({
-            where: { userId },
+            where: { telegramId },
          }),
       ]);
 

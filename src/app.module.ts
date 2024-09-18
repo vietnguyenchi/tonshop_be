@@ -40,7 +40,7 @@ export class AppModule implements NestModule {
          .exclude(
             { path: 'auth/login', method: RequestMethod.POST },
             { path: 'auth/login-admin', method: RequestMethod.POST },
-            { path: 'transaction/:id', method: RequestMethod.GET },
+            { path: 'transaction/momo_callback', method: RequestMethod.GET },
          )
          .forRoutes('*');
    }

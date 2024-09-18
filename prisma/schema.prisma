@@ -73,6 +73,7 @@ model Chain {
   name      String      @unique
   value     String
   rpcUrl    String
+  apiKey    String
   status    StatusChain @default(active)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt

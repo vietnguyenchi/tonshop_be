@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TonRepository } from './ton.repository';
+import { internal } from '@ton/core';
 // import { ethers, JsonRpcProvider, Wallet } from 'ethers';
 
 @Injectable()
@@ -32,7 +33,7 @@ export class TonService {
       this.logger.debug(`Network found: ${network.value}`);
 
       try {
-         let result;
+         let result: any;
          switch (network.value.toLowerCase()) {
             case 'ton':
                this.logger.log('Processing TON transaction');
@@ -41,6 +42,7 @@ export class TonService {
                   quantity,
                   message,
                   network.rpcUrl,
+                  network.apiKey,
                );
                break;
             // case 'bsc':
@@ -66,6 +68,7 @@ export class TonService {
       quantity: number,
       message: string,
       network: string,
+      apiKey: string,
    ): Promise<{ message: string; status: string }> {
       const { privateKey: mnemonic } =
          await this.tonRepository.findActiveWallet();
@@ -76,6 +79,7 @@ export class TonService {
       const { wallet, client, key } = await this.tonRepository.createWallet(
          mnemonic,
          network,
+         apiKey,
       );
 
       if (!(await client.isContractDeployed(wallet.address))) {
@@ -85,14 +89,18 @@ export class TonService {
       const walletContract = client.open(wallet);
       const seqno = await walletContract.getSeqno();
 
-      await this.tonRepository.sendTonTransaction(
-         walletContract,
-         key,
+      await walletContract.sendTransfer({
+         secretKey: key.secretKey,
          seqno,
-         walletAddress,
-         quantity,
-         message,
-      );
+         messages: [
+            internal({
+               value: quantity.toString(),
+               to: walletAddress,
+               body: message,
+               bounce: false,
+            }),
+         ],
+      });
 
       return { message: 'Transaction sent', status: 'success' };
    }

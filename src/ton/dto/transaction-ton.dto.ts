@@ -3,4 +3,5 @@ export class TransactionTonDto {
    quantity: number;
    message: string;
    network: string;
+   apiKey: string;
 }

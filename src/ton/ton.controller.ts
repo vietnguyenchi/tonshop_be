@@ -24,6 +24,7 @@ export class TonController {
          transactionTonDto.quantity,
          transactionTonDto.message,
          transactionTonDto.network,
+         transactionTonDto.apiKey,
       );
    }
 }

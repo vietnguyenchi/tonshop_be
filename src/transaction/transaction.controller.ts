@@ -109,7 +109,7 @@ export class TransactionController {
       return await this.transactionService.findAllTransactions(page, limit);
    }
 
-   @Get('all/:userId')
+   @Get('all/:telegramId')
    @UseGuards(JwtAuthGuard, RolesGuard)
    @Roles('admin', 'user')
    async findAllTransactionsByUserId(

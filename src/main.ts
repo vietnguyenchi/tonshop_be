@@ -6,7 +6,8 @@ async function bootstrap() {
       logger: ['error', 'warn', 'log', 'debug', 'verbose'],
    });
    app.enableCors({
-      origin: process.env.FRONTEND_URL,
+      // origin: process.env.FRONTEND_URL,
+      origin: '*',
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       allowedHeaders: 'Content-Type, Accept, Authorization',
    });

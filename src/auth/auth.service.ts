@@ -11,7 +11,6 @@ import { DatabaseService } from './../database/database.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginAdminDto } from './dto/login-admin.dto';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -49,6 +48,7 @@ export class AuthService {
          const payload = {
             username: user.username,
             telegramId: user.telegramId,
+            id: user.id,
             role: user.role,
          };
          return {
@@ -91,6 +91,7 @@ export class AuthService {
             username: user.username,
             telegramId: user.telegramId,
             role: user.role,
+            id: user.id,
          };
 
          return {

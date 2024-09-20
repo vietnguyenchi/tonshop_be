@@ -26,13 +26,16 @@ export class TransactionService {
             ).toString(),
          );
          const signkey = process.env.SIGN_KEY;
+         const frontend_url = process.env.FRONTEND_URL;
+         const backend_url = process.env.BACKEND_URL;
          const chargeType = createTransactionDto.chargeType;
          const requestId = createTransactionDto.requestId;
+         const apiKeyMopay = process.env.API_KEY_MOPAY;
          const sign = CryptoJS.MD5(
             `${amount}${chargeType}${requestId}${signkey}`,
          ).toString();
          const response = await axios.get(
-            `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${process.env.API_KEY}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=https://tonshop-be.onrender.com/transaction/momo_callback&redirectFrontEnd_url=https://ton-shop.onrender.com/transactionStatus&sign=${sign}`,
+            `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=${backend_url}/transaction/momo_callback&redirectFrontEnd_url=${frontend_url}&sign=${sign}`,
          );
          const data: Prisma.TransactionCreateInput = {
             chargeId: response.data.data.id.toString(),

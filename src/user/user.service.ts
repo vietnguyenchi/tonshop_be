@@ -6,33 +6,33 @@ import { Prisma } from '@prisma/client';
 export class UserService {
    constructor(private readonly databaseService: DatabaseService) {}
 
-   create(createUserDto: Prisma.UserCreateInput) {
+   async create(createUserDto: Prisma.UserCreateInput) {
       try {
-         return this.databaseService.user.create({ data: createUserDto });
+         return await this.databaseService.user.create({ data: createUserDto });
       } catch (error) {
          throw new HttpException(error.message, error.status);
       }
    }
 
-   findAll() {
+   async findAll() {
       try {
-         return this.databaseService.user.findMany();
+         return await this.databaseService.user.findMany();
       } catch (error) {
          throw new HttpException(error.message, error.status);
       }
    }
 
-   findOne(id: string) {
+   async findOne(id: string) {
       try {
-         return this.databaseService.user.findUnique({ where: { id } });
+         return await this.databaseService.user.findUnique({ where: { id } });
       } catch (error) {
          throw new HttpException(error.message, error.status);
       }
    }
 
-   update(id: string, updateUserDto: Prisma.UserUpdateInput) {
+   async update(id: string, updateUserDto: Prisma.UserUpdateInput) {
       try {
-         return this.databaseService.user.update({
+         return await this.databaseService.user.update({
             where: { id },
             data: updateUserDto,
          });
@@ -41,9 +41,9 @@ export class UserService {
       }
    }
 
-   remove(id: string) {
+   async remove(id: string) {
       try {
-         return this.databaseService.user.delete({ where: { id } });
+         return await this.databaseService.user.delete({ where: { id } });
       } catch (error) {
          throw new HttpException(error.message, error.status);
       }

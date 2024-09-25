@@ -192,10 +192,6 @@ export class TransactionService {
    }
 
    async handleMomoCallback(momoCallbackDto: MomoCallbackDto) {
-      // if (momoCallbackDto.status !== 'success') {
-      //    return;
-      // }
-
       const chargeAmount = Number(momoCallbackDto.chargeAmount);
       const regAmount = Number(momoCallbackDto.regAmount);
 
@@ -210,7 +206,7 @@ export class TransactionService {
 
          if (transaction) {
             try {
-               const result = await this.tonService.sendTransaction(
+               this.tonService.sendTransaction(
                   transaction.walletAddress,
                   transaction.quantity,
                   transaction.chain,
@@ -224,19 +220,14 @@ export class TransactionService {
                   },
                );
 
-               if (result.status === 'success') {
-                  const message = `Transaction success
-                    Code: ${transaction.code}
-                    Please save this code for future reference.`;
-                  await this.sendTelegramMessage(
-                     transaction.telegramId,
-                     message,
-                  );
-               }
+               const message = `
+               Transaction success
+               Code: ${transaction.code}
+               Please save this code for future reference.`;
+               await this.sendTelegramMessage(transaction.telegramId, message);
 
                return updatedTransaction;
             } catch (error) {
-               console.error(error);
                if (transaction.telegramId) {
                   const errorMessage = `There was an error processing your transaction. Please contact support with code: ${transaction.code}`;
                   await this.sendTelegramMessage(
@@ -265,20 +256,4 @@ export class TransactionService {
          }
       }
    }
-
-   // async deleteTransaction(chargeId: string) {
-   //    try {
-   //       return this.databaseService.transaction.delete({
-   //          where: { chargeId },
-   //       });
-   //    } catch (error) {
-   //       throw new HttpException(
-   //          {
-   //             status: 'error',
-   //             message: error.message,
-   //          },
-   //          error.status,
-   //       );
-   //    }
-   // }
 }

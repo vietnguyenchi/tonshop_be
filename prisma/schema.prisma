@@ -98,3 +98,12 @@ enum StatusWallet {
   active
   disabled
 }
+
+model TransactionTon {
+  id       String  @id @default(uuid())
+  lt_start String?
+  address  String
+  lt       String?
+  hash     String?
+  code     String  @unique
+}

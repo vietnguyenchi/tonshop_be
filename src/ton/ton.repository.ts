@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { Contract, TonClient, WalletContractV4, internal } from '@ton/ton';
 import { mnemonicToWalletKey } from '@ton/crypto';
-import { getHttpEndpoint, Network } from '@orbs-network/ton-access';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TonRepository {
@@ -33,5 +33,23 @@ export class TonRepository {
          apiKey: apiKey,
       });
       return { wallet, client, key };
+   }
+
+   async createTonTransaction(
+      createTransactionDto: Prisma.TransactionTonCreateInput,
+   ) {
+      return this.databaseService.transactionTon.create({
+         data: createTransactionDto,
+      });
+   }
+
+   async updateTonTransaction(
+      code: string,
+      updateTransactionDto: Prisma.TransactionTonUpdateInput,
+   ) {
+      return this.databaseService.transactionTon.update({
+         where: { code },
+         data: updateTransactionDto,
+      });
    }
 }

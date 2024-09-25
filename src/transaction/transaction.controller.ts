@@ -137,7 +137,7 @@ export class TransactionController {
    @Roles('admin', 'user')
    async checkTransactionStatus(@Param('chargeId') chargeId: string) {
       try {
-         await this.transactionService.checkTransactionStatus(chargeId);
+         return await this.transactionService.checkTransactionStatus(chargeId);
       } catch (error) {
          throw new HttpException(
             'Failed to check transaction status',

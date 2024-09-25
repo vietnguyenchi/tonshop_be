@@ -8,6 +8,10 @@ import * as CryptoJS from 'crypto-js';
 import { BotService } from '../bot/bot.service';
 import { TonService } from '../ton/ton.service';
 
+const frontend_url = process.env.FRONTEND_URL;
+const backend_url = process.env.BACKEND_URL;
+const apiKeyMopay = process.env.API_KEY_MOPAY;
+const signkey = process.env.SIGN_KEY;
 @Injectable()
 export class TransactionService {
    constructor(
@@ -25,12 +29,8 @@ export class TransactionService {
                   createTransactionDto.transactionFee,
             ).toString(),
          );
-         const signkey = process.env.SIGN_KEY;
-         const frontend_url = process.env.FRONTEND_URL;
-         const backend_url = process.env.BACKEND_URL;
          const chargeType = createTransactionDto.chargeType;
          const requestId = createTransactionDto.requestId;
-         const apiKeyMopay = process.env.API_KEY_MOPAY;
          const sign = CryptoJS.MD5(
             `${amount}${chargeType}${requestId}${signkey}`,
          ).toString();
@@ -167,7 +167,7 @@ export class TransactionService {
    async checkTransactionStatus(chargeId: string) {
       try {
          const response = await axios.get(
-            `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${process.env.API_KEY}&id=${chargeId}`,
+            `https://switch.mopay.info/api13/MM/CheckCharge?apiKey=${apiKeyMopay}&id=${chargeId}`,
          );
 
          return response.data.data;

@@ -52,4 +52,14 @@ export class TonRepository {
          data: updateTransactionDto,
       });
    }
+
+   async getAllTransaction() {
+      return this.databaseService.transactionTon.findMany();
+   }
+
+   async getTransactionByCode(code: string) {
+      return this.databaseService.transactionTon.findUnique({
+         where: { code },
+      });
+   }
 }

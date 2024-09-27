@@ -170,6 +170,8 @@ export class TonService {
             break;
          }
       }
+
+      return { message: 'Transaction sent', status: 'success' };
    }
 
    private async transferEVM(
@@ -220,5 +222,9 @@ export class TonService {
       await tx.wait();
 
       return { message: 'Transaction sent', status: 'success' };
+   }
+
+   async getAllTransactions(page: number, limit: number) {
+      return this.tonRepository.getAllTransaction(page, limit);
    }
 }

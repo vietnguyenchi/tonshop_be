@@ -53,8 +53,26 @@ export class TonRepository {
       });
    }
 
-   async getAllTransaction() {
-      return this.databaseService.transactionTon.findMany();
+   async getAllTransaction(page: number, limit: number) {
+      const skip = (page - 1) * limit;
+      const [transactions, total] = await Promise.all([
+         this.databaseService.transactionTon.findMany({
+            orderBy: { lt: 'desc' },
+            skip: skip,
+            take: Number(limit),
+         }),
+         this.databaseService.transactionTon.count(),
+      ]);
+
+      return {
+         data: transactions,
+         meta: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+         },
+      };
    }
 
    async getTransactionByCode(code: string) {

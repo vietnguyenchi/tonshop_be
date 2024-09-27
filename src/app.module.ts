@@ -38,6 +38,7 @@ export class AppModule implements NestModule {
       consumer
          .apply(AuthMiddleware)
          .exclude(
+            { path: 'health_check', method: RequestMethod.GET },
             { path: 'auth/login', method: RequestMethod.POST },
             { path: 'auth/login-admin', method: RequestMethod.POST },
             { path: 'transaction/momo_callback', method: RequestMethod.GET },

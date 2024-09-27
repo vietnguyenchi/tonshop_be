@@ -8,8 +8,6 @@ import * as CryptoJS from 'crypto-js';
 import { BotService } from '../bot/bot.service';
 import { TonService } from '../ton/ton.service';
 
-const frontend_url = process.env.FRONTEND_URL;
-const backend_url = process.env.BACKEND_URL;
 const apiKeyMopay = process.env.API_KEY_MOPAY;
 const signkey = process.env.SIGN_KEY;
 @Injectable()
@@ -35,7 +33,7 @@ export class TransactionService {
             `${amount}${chargeType}${requestId}${signkey}`,
          ).toString();
          const response = await axios.get(
-            `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=${backend_url}/transaction/momo_callback&redirectFrontEnd_url=${frontend_url}&sign=${sign}`,
+            `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&sign=${sign}`,
          );
          const data: Prisma.TransactionCreateInput = {
             chargeId: response.data.data.id.toString(),
@@ -123,7 +121,7 @@ export class TransactionService {
          this.databaseService.transaction.findMany({
             where: { telegramId },
             orderBy: { createAt: 'desc' },
-            take: limit,
+            take: Number(limit),
             skip: skip,
          }),
          this.databaseService.transaction.count({
@@ -147,7 +145,7 @@ export class TransactionService {
       const [transactions, total] = await Promise.all([
          this.databaseService.transaction.findMany({
             orderBy: { createAt: 'desc' },
-            take: limit,
+            take: Number(limit),
             skip: skip,
          }),
          this.databaseService.transaction.count(),
@@ -222,8 +220,8 @@ export class TransactionService {
 
                const message = `
                Transaction success
-               Code: ${transaction.code}
-               Please save this code for future reference.`;
+Code: ${transaction.code}
+Please save this code for future reference.`;
                await this.sendTelegramMessage(transaction.telegramId, message);
 
                return updatedTransaction;
@@ -248,7 +246,7 @@ export class TransactionService {
             });
 
             if (transaction.telegramId) {
-               const message = `Your payment of ${chargeAmount} was received, but it's less than the required amount of ${regAmount}. Please contact support for assistance.`;
+               const message = `Your payment of ${chargeAmount} was received, but it's less than the required amount of ${regAmount}. Please make a new payment.`;
                await this.sendTelegramMessage(transaction.telegramId, message);
             }
 

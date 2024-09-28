@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TonRepository } from './ton.repository';
-import { Address, Cell, internal } from '@ton/core';
+import { Address, Cell, fromNano, internal } from '@ton/core';
 import { ethers, JsonRpcProvider, Wallet } from 'ethers';
 
 @Injectable()
@@ -222,6 +222,69 @@ export class TonService {
       await tx.wait();
 
       return { message: 'Transaction sent', status: 'success' };
+   }
+
+   async estimateGas(
+      recipientAddress: string,
+      quantity: number,
+      chainId: string,
+      message: string,
+   ) {
+      const network = await this.tonRepository.findChain(chainId);
+
+      if (!network) {
+         this.logger.error(`Network not found for chainId: ${chainId}`);
+         throw new Error('Network not found');
+      }
+
+      const { privateKey: mnemonic } =
+         await this.tonRepository.findActiveWallet();
+      if (!mnemonic) {
+         throw new Error('Wallet mnemonic not found');
+      }
+
+      const { wallet, client, key } = await this.tonRepository.createWallet(
+         mnemonic,
+         network.rpcUrl,
+         network.apiKey,
+      );
+
+      const walletContract = client.open(wallet);
+
+      const seqno = await walletContract.getSeqno();
+
+      const sendTransfer = walletContract.createTransfer({
+         secretKey: key.secretKey,
+         seqno: seqno,
+         messages: [
+            internal({
+               value: quantity.toString(),
+               to: Address.parse(recipientAddress),
+               body: message,
+               bounce: false,
+            }),
+         ],
+         sendMode: 1,
+      });
+
+      const estimate = await client.estimateExternalMessageFee(
+         Address.parse(recipientAddress),
+         {
+            body: sendTransfer,
+            initCode: walletContract.init.code,
+            initData: walletContract.init.data,
+            ignoreSignature: false,
+         },
+      );
+
+      const estimateFee = fromNano(
+         estimate.source_fees.fwd_fee +
+            estimate.source_fees.gas_fee +
+            estimate.source_fees.in_fwd_fee +
+            estimate.source_fees.storage_fee,
+      );
+
+      return estimateFee;
    }
 
    async getAllTransactions(page: number, limit: number) {

@@ -35,6 +35,17 @@ export class TransactionService {
          const response = await axios.get(
             `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&sign=${sign}`,
          );
+
+         const estimateGas = await this.tonService.estimateGas(
+            createTransactionDto.walletAddress,
+            createTransactionDto.quantity,
+            createTransactionDto.chain,
+            response.data.data.code,
+         );
+
+         const transactionFee =
+            Number(estimateGas) * createTransactionDto.exchangeRate;
+
          const data: Prisma.TransactionCreateInput = {
             chargeId: response.data.data.id.toString(),
             bank_provider: response.data.data.chargeType,
@@ -43,9 +54,7 @@ export class TransactionService {
             chain: createTransactionDto.chain,
             walletAddress: createTransactionDto.walletAddress,
             user: { connect: { id: createTransactionDto.userId } },
-            transactionFee: parseFloat(
-               createTransactionDto.transactionFee.toString(),
-            ),
+            transactionFee: transactionFee,
             exchangeRate: createTransactionDto.exchangeRate,
             code: response.data.data.code,
             email: createTransactionDto.email,

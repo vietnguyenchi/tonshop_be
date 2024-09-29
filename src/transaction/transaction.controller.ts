@@ -70,7 +70,6 @@ export class TransactionController {
       @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
    ) {
       try {
-         console.log(momoCallbackDto);
          const transaction =
             await this.transactionService.handleMomoCallback(momoCallbackDto);
 

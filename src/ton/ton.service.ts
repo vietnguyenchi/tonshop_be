@@ -125,16 +125,10 @@ export class TonService {
 
       for (const transaction of transactions) {
          if (transaction.in_msg?.message.includes(message)) {
-            const data = await http.getTransaction(
-               Address.parse(walletAddress),
-               transaction.transaction_id.lt,
-               transaction.transaction_id.hash,
-            );
-
             await this.tonRepository.updateTonTransaction(message, {
-               lt: data.transaction_id.lt,
-               hash: data.transaction_id.hash,
-               quantity: Number(fromNano(data.in_msg?.value)),
+               lt: transaction.transaction_id.lt,
+               hash: transaction.transaction_id.hash,
+               quantity: Number(fromNano(transaction.in_msg?.value)),
                status: 'success',
             });
 

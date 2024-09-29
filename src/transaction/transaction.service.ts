@@ -20,15 +20,29 @@ export class TransactionService {
 
    async createTransaction(createTransactionDto: CreateTransactionDto) {
       try {
-         const amount = parseInt(
-            Math.ceil(
-               createTransactionDto.exchangeRate *
-                  createTransactionDto.quantity +
-                  createTransactionDto.transactionFee,
-            ).toString(),
+         const {
+            chargeType,
+            requestId,
+            walletAddress,
+            quantity,
+            chain,
+            userId,
+            email,
+            phoneNumberUser,
+            telegramId,
+         } = createTransactionDto;
+         const estimateGas = await this.tonService.estimateGas(
+            walletAddress,
+            quantity,
+            chain,
+            'transaction message',
          );
-         const chargeType = createTransactionDto.chargeType;
-         const requestId = createTransactionDto.requestId;
+         const transactionFee =
+            Number(estimateGas) * createTransactionDto.exchangeRate;
+
+         const amount = Math.ceil(
+            createTransactionDto.exchangeRate * quantity + transactionFee,
+         );
          const sign = CryptoJS.MD5(
             `${amount}${chargeType}${requestId}${signkey}`,
          ).toString();
@@ -36,35 +50,25 @@ export class TransactionService {
             `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&sign=${sign}`,
          );
 
-         const estimateGas = await this.tonService.estimateGas(
-            createTransactionDto.walletAddress,
-            createTransactionDto.quantity,
-            createTransactionDto.chain,
-            response.data.data.code,
-         );
-
-         const transactionFee =
-            Number(estimateGas) * createTransactionDto.exchangeRate;
-
          const data: Prisma.TransactionCreateInput = {
             chargeId: response.data.data.id.toString(),
             bank_provider: response.data.data.chargeType,
-            amount: amount,
-            quantity: createTransactionDto.quantity,
-            chain: createTransactionDto.chain,
-            walletAddress: createTransactionDto.walletAddress,
-            user: { connect: { id: createTransactionDto.userId } },
-            transactionFee: transactionFee,
+            amount,
+            quantity,
+            chain,
+            walletAddress,
+            user: { connect: { id: userId } },
+            transactionFee,
             exchangeRate: createTransactionDto.exchangeRate,
             code: response.data.data.code,
-            email: createTransactionDto.email,
+            email,
             phoneName: response.data.data.phoneName,
-            phoneNumber: createTransactionDto.phoneNumberUser,
+            phoneNumber: phoneNumberUser,
             timeToExpired: response.data.data.timeToExpired,
             phoneNum: response.data.data.phoneNum,
             qr_url: response.data.data.qr_url,
             redirect_ssl: response.data.data.redirect_ssl,
-            telegramId: createTransactionDto.telegramId,
+            telegramId,
          };
          return this.databaseService.transaction.create({
             data,
@@ -190,77 +194,62 @@ export class TransactionService {
       }
    }
 
-   async sendTelegramMessage(telegramId: string, message: string) {
-      try {
-         await this.botService.sendMessage(telegramId, message);
-      } catch (error) {
-         console.error('Error sending Telegram message:', error);
-      }
-   }
-
    async handleMomoCallback(momoCallbackDto: MomoCallbackDto) {
-      const chargeAmount = Number(momoCallbackDto.chargeAmount);
-      const regAmount = Number(momoCallbackDto.regAmount);
+      const { chargeId, chargeAmount, regAmount, status } = momoCallbackDto;
+      await this.updateTransactionStatus(chargeId, { status: 'success' });
 
-      await this.updateTransactionStatus(momoCallbackDto.chargeId, {
-         status: 'success',
+      const transaction = await this.databaseService.transaction.findUnique({
+         where: { chargeId: momoCallbackDto.chargeId },
       });
 
-      if (chargeAmount >= regAmount) {
-         const transaction = await this.databaseService.transaction.findUnique({
-            where: { chargeId: momoCallbackDto.chargeId },
-         });
+      if (!transaction) return null;
 
-         if (transaction) {
-            try {
-               this.tonService.sendTransaction(
-                  transaction.walletAddress,
-                  transaction.quantity,
-                  transaction.chain,
-                  transaction.code,
-               );
+      if (Number(chargeAmount) >= regAmount) {
+         try {
+            const message = `You have successfully made a payment of ${chargeAmount} for transaction code: ${transaction.code}. We are now processing your transaction. Please wait for the confirmation. If the transaction is not confirmed within 10 minutes, please contact support.`;
+            await this.botService.sendMessage(transaction.telegramId, message);
+            await this.tonService.sendTransaction(
+               transaction.walletAddress,
+               transaction.quantity,
+               transaction.chain,
+               transaction.code,
+            );
 
-               const updatedTransaction = await this.updateTransactionStatus(
-                  momoCallbackDto.chargeId,
-                  {
-                     status: 'success',
-                  },
-               );
-
-               const message = `
-               Transaction success
-Code: ${transaction.code}
-Please save this code for future reference.`;
-               await this.sendTelegramMessage(transaction.telegramId, message);
-
-               return updatedTransaction;
-            } catch (error) {
-               if (transaction.telegramId) {
-                  const errorMessage = `There was an error processing your transaction. Please contact support with code: ${transaction.code}`;
-                  await this.sendTelegramMessage(
-                     transaction.telegramId,
-                     errorMessage,
-                  );
-               }
-            }
-         }
-      } else {
-         const transaction = await this.databaseService.transaction.findUnique({
-            where: { chargeId: momoCallbackDto.chargeId },
-         });
-
-         if (transaction) {
-            await this.updateTransactionStatus(momoCallbackDto.chargeId, {
-               status: 'success',
-            });
-
+            return await this.updateTransactionStatus(
+               momoCallbackDto.chargeId,
+               {
+                  status: 'success',
+               },
+            );
+         } catch (error) {
             if (transaction.telegramId) {
-               const message = `Your payment of ${chargeAmount} was received, but it's less than the required amount of ${regAmount}. Please make a new payment.`;
-               await this.sendTelegramMessage(transaction.telegramId, message);
+               const errorMessage = `There was an error processing your transaction. Please contact support with code: ${transaction.code}`;
+               await this.botService.sendMessage(
+                  transaction.telegramId,
+                  errorMessage,
+               );
             }
-
-            return null;
          }
+      } else if (status === 'timeout') {
+         await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+            status: 'timeout',
+         });
+
+         const message = `Your transaction has been timed out. Please make a new payment.`;
+         await this.botService.sendMessage(transaction.telegramId, message);
+
+         return null;
+      } else {
+         await this.updateTransactionStatus(momoCallbackDto.chargeId, {
+            status: 'success',
+         });
+
+         if (transaction.telegramId) {
+            const message = `Your payment of ${chargeAmount} was received, but it's less than the required amount of ${regAmount}. Please make a new payment.`;
+            await this.botService.sendMessage(transaction.telegramId, message);
+         }
+
+         return null;
       }
    }
 }

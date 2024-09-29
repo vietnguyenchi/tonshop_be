@@ -13,38 +13,6 @@ export class TonService {
       return new Promise((resolve) => setTimeout(resolve, ms));
    }
 
-   decodeBodyCell(bodyCell: Cell | undefined): string | null {
-      try {
-         if (!bodyCell) {
-            console.error('bodyCell is undefined');
-            return null;
-         }
-
-         // Chuyển đổi cell thành chuỗi hex
-         const slice = bodyCell.toString();
-
-         // Loại bỏ các ký tự không phải hex
-         const cleanHex = slice.replace(/[^0-9A-Fa-f]/g, '');
-
-         // Tạo mảng byte từ chuỗi hex
-         const bytes = new Uint8Array(cleanHex.length / 2);
-         for (let i = 0; i < cleanHex.length; i += 2) {
-            bytes[i / 2] = parseInt(cleanHex.substring(i, i + 2), 16);
-         }
-
-         // Loại bỏ các byte null (nếu cần)
-         const filteredBytes = bytes.filter((byte) => byte !== 0);
-
-         // Giải mã toàn bộ mảng byte
-         const decodedText = new TextDecoder().decode(filteredBytes);
-
-         return decodedText;
-      } catch (error) {
-         console.error('Error decoding transaction body:', error);
-         return null;
-      }
-   }
-
    async sendTransaction(
       recipientAddress: string,
       quantity: number,
@@ -65,38 +33,48 @@ export class TonService {
       this.logger.debug(`Network found: ${network.value}`);
 
       try {
-         let result: any;
-         switch (network.value.toLowerCase()) {
-            case 'ton':
-               this.logger.log('Processing TON transaction');
-               result = await this.transactionTon(
-                  recipientAddress,
-                  quantity,
-                  message,
-                  network.rpcUrl,
-                  network.apiKey,
-               );
-               break;
-            // case 'bsc':
-
-            case 'ethereum':
-               this.logger.log(`Processing ${network.value} transaction`);
-               result = await this.transferEVM(
-                  recipientAddress,
-                  quantity,
-                  network.rpcUrl,
-               );
-               break;
-            default:
-               this.logger.warn(`Unsupported chain: ${network.value}`);
-               throw new Error('Unsupported chain');
-         }
-
+         const result = await this.processTransaction(
+            network.value.toLowerCase(),
+            recipientAddress,
+            quantity,
+            message,
+            network,
+         );
          this.logger.log(`Transaction completed: ${JSON.stringify(result)}`);
          return result;
       } catch (error) {
          this.logger.error(`Transaction failed: ${error.message}`, error.stack);
          throw error;
+      }
+   }
+
+   private async processTransaction(
+      chain: string,
+      recipientAddress: string,
+      quantity: number,
+      message: string,
+      network: any,
+   ) {
+      switch (chain) {
+         case 'ton':
+            this.logger.log('Processing TON transaction');
+            return await this.transactionTon(
+               recipientAddress,
+               quantity,
+               message,
+               network.rpcUrl,
+               network.apiKey,
+            );
+         case 'ethereum':
+            this.logger.log(`Processing ${network.value} transaction`);
+            return await this.transferEVM(
+               recipientAddress,
+               quantity,
+               network.rpcUrl,
+            );
+         default:
+            this.logger.warn(`Unsupported chain: ${network.value}`);
+            throw new Error('Unsupported chain');
       }
    }
 
@@ -113,11 +91,8 @@ export class TonService {
          throw new Error('Wallet mnemonic not found');
       }
 
-      const { wallet, client, key } = await this.tonRepository.createWallet(
-         mnemonic,
-         network,
-         apiKey,
-      );
+      const { wallet, client, key, http } =
+         await this.tonRepository.createWallet(mnemonic, network, apiKey);
 
       const walletContract = client.open(wallet);
       const seqno = await walletContract.getSeqno();
@@ -146,7 +121,7 @@ export class TonService {
 
       await this.sleep(20000);
 
-      const transactions = await client.getTransactions(
+      const transactions = await http.getTransactions(
          Address.parse(walletAddress),
          {
             limit: 10,
@@ -155,16 +130,18 @@ export class TonService {
       );
 
       for (const transaction of transactions) {
-         if (this.decodeBodyCell(transaction.inMessage?.body) === message) {
-            const data = await client.getTransaction(
+         if (transaction.in_msg?.message.includes(message)) {
+            const data = await http.getTransaction(
                Address.parse(walletAddress),
-               transaction.lt.toString(),
-               transaction.hash().toString('base64'),
+               transaction.transaction_id.lt,
+               transaction.transaction_id.hash,
             );
 
             await this.tonRepository.updateTonTransaction(message, {
-               lt: data.lt.toString(),
-               hash: data.hash().toString('base64'),
+               quantity: Number(fromNano(data.in_msg?.value)),
+               lt: data.transaction_id.lt,
+               hash: data.transaction_id.hash,
+               status: 'success',
             });
 
             break;
@@ -192,37 +169,37 @@ export class TonService {
       return { message: 'Transaction sent', status: 'success' };
    }
 
-   async transferERC20(
-      recipientAddress: string,
-      amount: number,
-      chain: string,
-      tokenAddress: string,
-   ): Promise<{ message: string; status: string }> {
-      const mnemonic = process.env.WALLET_MNEMONIC;
-      if (!mnemonic) {
-         throw new Error('Wallet mnemonic not found in environment variables');
-      }
+   // async transferERC20(
+   //    recipientAddress: string,
+   //    amount: number,
+   //    chain: string,
+   //    tokenAddress: string,
+   // ): Promise<{ message: string; status: string }> {
+   //    const mnemonic = process.env.WALLET_MNEMONIC;
+   //    if (!mnemonic) {
+   //       throw new Error('Wallet mnemonic not found in environment variables');
+   //    }
 
-      const chainData = await this.tonRepository.findChain(chain);
+   //    const chainData = await this.tonRepository.findChain(chain);
 
-      const rpcUrl = chainData?.rpcUrl;
-      const provider = new JsonRpcProvider(rpcUrl);
-      const wallet = Wallet.fromPhrase(mnemonic, provider);
+   //    const rpcUrl = chainData?.rpcUrl;
+   //    const provider = new JsonRpcProvider(rpcUrl);
+   //    const wallet = Wallet.fromPhrase(mnemonic, provider);
 
-      const tokenContract = new ethers.Contract(
-         tokenAddress,
-         ['function transfer(address to, uint256 amount) returns (bool)'],
-         wallet,
-      );
+   //    const tokenContract = new ethers.Contract(
+   //       tokenAddress,
+   //       ['function transfer(address to, uint256 amount) returns (bool)'],
+   //       wallet,
+   //    );
 
-      const tx = await tokenContract.transfer(
-         recipientAddress,
-         ethers.parseUnits(amount.toString(), 18),
-      );
-      await tx.wait();
+   //    const tx = await tokenContract.transfer(
+   //       recipientAddress,
+   //       ethers.parseUnits(amount.toString(), 18),
+   //    );
+   //    await tx.wait();
 
-      return { message: 'Transaction sent', status: 'success' };
-   }
+   //    return { message: 'Transaction sent', status: 'success' };
+   // }
 
    async estimateGas(
       recipientAddress: string,

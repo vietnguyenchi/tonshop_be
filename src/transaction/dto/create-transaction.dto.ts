@@ -2,39 +2,36 @@ import { IsString, IsNumber, IsDecimal, IsEnum } from 'class-validator';
 import { Status } from '@prisma/client';
 
 export class CreateTransactionDto {
-  @IsString()
-  requestId: string;
+   @IsString()
+   requestId: string;
 
-  @IsString()
-  chargeType: string;
+   @IsString()
+   chargeType: string;
 
-  @IsString()
-  chain: string;
+   @IsString()
+   chain: string;
 
-  @IsString()
-  email: string;
+   @IsString()
+   email: string;
 
-  @IsDecimal()
-  exchangeRate: number;
+   @IsDecimal()
+   exchangeRate: number;
 
-  @IsString()
-  phoneNumberUser: string;
+   @IsString()
+   phoneNumberUser: string;
 
-  @IsNumber()
-  quantity: number;
+   @IsNumber()
+   quantity: number;
 
-  @IsNumber()
-  timeToExpired: number;
+   @IsNumber()
+   timeToExpired: number;
 
-  @IsDecimal()
-  transactionFee: number;
+   @IsString()
+   userId: string;
 
-  @IsString()
-  userId: string;
+   @IsString()
+   walletAddress: string;
 
-  @IsString()
-  walletAddress: string;
-
-  @IsString()
-  telegramId: string;
+   @IsString()
+   telegramId: string;
 }

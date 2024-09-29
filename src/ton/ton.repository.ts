@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { Contract, TonClient, WalletContractV4, internal } from '@ton/ton';
+import {
+   Contract,
+   HttpApi,
+   TonClient,
+   WalletContractV4,
+   internal,
+} from '@ton/ton';
 import { mnemonicToWalletKey } from '@ton/crypto';
 import { Prisma } from '@prisma/client';
 
@@ -32,7 +38,9 @@ export class TonRepository {
          endpoint: network,
          apiKey: apiKey,
       });
-      return { wallet, client, key };
+
+      const http = new HttpApi(network);
+      return { wallet, client, key, http };
    }
 
    async createTonTransaction(

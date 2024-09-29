@@ -10,6 +10,8 @@ import { TonService } from '../ton/ton.service';
 
 const apiKeyMopay = process.env.API_KEY_MOPAY;
 const signkey = process.env.SIGN_KEY;
+const backendUrl = process.env.BACKEND_URL;
+
 @Injectable()
 export class TransactionService {
    constructor(
@@ -47,7 +49,7 @@ export class TransactionService {
             `${amount}${chargeType}${requestId}${signkey}`,
          ).toString();
          const response = await axios.get(
-            `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&sign=${sign}`,
+            `https://switch.mopay.info/api13/MM/RegCharge?apiKey=${apiKeyMopay}&chargeType=${chargeType}&amount=${amount}&requestId=${requestId}&callback=${backendUrl}/transaction/momo_callback&sign=${sign}`,
          );
 
          const data: Prisma.TransactionCreateInput = {

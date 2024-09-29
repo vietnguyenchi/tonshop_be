@@ -28,7 +28,8 @@ export class TonRepository {
       });
    }
 
-   async createWallet(mnemonic: string, network: string, apiKey: string) {
+   async createWallet(network: string, apiKey: string) {
+      const mnemonic = process.env.SECRET_KEY;
       const key = await mnemonicToWalletKey(mnemonic.split(' '));
       const wallet = WalletContractV4.create({
          publicKey: key.publicKey,

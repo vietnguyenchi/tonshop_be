@@ -85,14 +85,8 @@ export class TonService {
       network: string,
       apiKey: string,
    ) {
-      const { privateKey: mnemonic } =
-         await this.tonRepository.findActiveWallet();
-      if (!mnemonic) {
-         throw new Error('Wallet mnemonic not found');
-      }
-
       const { wallet, client, key, http } =
-         await this.tonRepository.createWallet(mnemonic, network, apiKey);
+         await this.tonRepository.createWallet(network, apiKey);
 
       const walletContract = client.open(wallet);
       const seqno = await walletContract.getSeqno();
@@ -214,14 +208,7 @@ export class TonService {
          throw new Error('Network not found');
       }
 
-      const { privateKey: mnemonic } =
-         await this.tonRepository.findActiveWallet();
-      if (!mnemonic) {
-         throw new Error('Wallet mnemonic not found');
-      }
-
       const { wallet, client, key } = await this.tonRepository.createWallet(
-         mnemonic,
          network.rpcUrl,
          network.apiKey,
       );

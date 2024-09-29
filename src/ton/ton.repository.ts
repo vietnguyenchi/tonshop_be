@@ -10,12 +10,27 @@ export class TonRepository {
    constructor(private readonly databaseService: DatabaseService) {}
 
    async findAllChain() {
-      return this.databaseService.chain.findMany();
+      return this.databaseService.chain.findMany({
+         select: {
+            name: true,
+            symbol: true,
+            rpcUrl: true,
+            apiKey: true,
+            network: true,
+         },
+      });
    }
 
    async findChainById(id: string) {
       return this.databaseService.chain.findUnique({
          where: { id },
+         select: {
+            name: true,
+            symbol: true,
+            rpcUrl: true,
+            apiKey: true,
+            network: true,
+         },
       });
    }
 

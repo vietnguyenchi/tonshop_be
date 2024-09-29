@@ -86,19 +86,12 @@ enum StatusChain {
 }
 
 model TransactionTon {
-  id       String    @id @default(uuid())
+  id       String  @id @default(uuid())
   lt_start String?
   address  String
   lt       String?
   hash     String?
-  code     String    @unique
+  code     String  @unique
   quantity Float?
-  status   StatusTon @default(waiting)
-}
-
-enum StatusTon {
-  waiting
-  success
-  unknow
-  cancel
+  status   Status  @default(waiting)
 }

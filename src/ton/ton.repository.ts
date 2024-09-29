@@ -3,17 +3,11 @@ import { DatabaseService } from '../database/database.service';
 import { HttpApi, TonClient, WalletContractV4 } from '@ton/ton';
 import { mnemonicToWalletKey } from '@ton/crypto';
 import { Prisma } from '@prisma/client';
+import { UpdateTransactionTonDto } from './dto/update-transaction-ton.dto';
 
 @Injectable()
 export class TonRepository {
    constructor(private readonly databaseService: DatabaseService) {}
-
-   async findActiveWallet() {
-      return this.databaseService.wallet.findFirst({
-         where: { status: 'active' },
-         select: { privateKey: true },
-      });
-   }
 
    async findChain(chainId: string) {
       return this.databaseService.chain.findUnique({
@@ -48,7 +42,7 @@ export class TonRepository {
 
    async updateTonTransaction(
       code: string,
-      updateTransactionDto: Prisma.TransactionTonUpdateInput,
+      updateTransactionDto: UpdateTransactionTonDto,
    ) {
       return this.databaseService.transactionTon.update({
          where: { code },

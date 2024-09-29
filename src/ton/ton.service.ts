@@ -65,13 +65,13 @@ export class TonService {
                network.rpcUrl,
                network.apiKey,
             );
-         case 'ethereum':
-            this.logger.log(`Processing ${network.value} transaction`);
-            return await this.transferEVM(
-               recipientAddress,
-               quantity,
-               network.rpcUrl,
-            );
+         // case 'ethereum':
+         //    this.logger.log(`Processing ${network.value} transaction`);
+         //    return await this.transferEVM(
+         //       recipientAddress,
+         //       quantity,
+         //       network.rpcUrl,
+         //    );
          default:
             this.logger.warn(`Unsupported chain: ${network.value}`);
             throw new Error('Unsupported chain');
@@ -145,23 +145,23 @@ export class TonService {
       return { message: 'Transaction sent', status: 'success' };
    }
 
-   private async transferEVM(
-      recipientAddress: string,
-      amount: number,
-      rpcUrl: string,
-   ): Promise<{ message: string; status: string }> {
-      const provider = new JsonRpcProvider(rpcUrl);
-      const wallet = Wallet.fromPhrase(process.env.WALLET_MNEMONIC, provider);
+   // private async transferEVM(
+   //    recipientAddress: string,
+   //    amount: number,
+   //    rpcUrl: string,
+   // ): Promise<{ message: string; status: string }> {
+   //    const provider = new JsonRpcProvider(rpcUrl);
+   //    const wallet = Wallet.fromPhrase(process.env.WALLET_MNEMONIC, provider);
 
-      const tx = await wallet.sendTransaction({
-         to: recipientAddress,
-         value: ethers.parseEther(amount.toString()),
-      });
+   //    const tx = await wallet.sendTransaction({
+   //       to: recipientAddress,
+   //       value: ethers.parseEther(amount.toString()),
+   //    });
 
-      await tx.wait();
+   //    await tx.wait();
 
-      return { message: 'Transaction sent', status: 'success' };
-   }
+   //    return { message: 'Transaction sent', status: 'success' };
+   // }
 
    // async transferERC20(
    //    recipientAddress: string,

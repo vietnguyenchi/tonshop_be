@@ -1,12 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import {
-   Contract,
-   HttpApi,
-   TonClient,
-   WalletContractV4,
-   internal,
-} from '@ton/ton';
+import { HttpApi, TonClient, WalletContractV4 } from '@ton/ton';
 import { mnemonicToWalletKey } from '@ton/crypto';
 import { Prisma } from '@prisma/client';
 

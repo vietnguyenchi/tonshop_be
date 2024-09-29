@@ -91,11 +91,11 @@ export class TonService {
       const walletContract = client.open(wallet);
       const seqno = await walletContract.getSeqno();
 
-      const state = await client.getContractState(walletContract.address);
+      const state = await http.getAddressInformation(walletContract.address);
 
       await this.tonRepository.createTonTransaction({
          address: walletAddress,
-         lt_start: state.lastTransaction.lt,
+         lt_start: state.last_transaction_id.lt,
          code: message,
       });
 
@@ -119,7 +119,7 @@ export class TonService {
          Address.parse(walletAddress),
          {
             limit: 10,
-            lt: state.lastTransaction?.lt,
+            lt: state.last_transaction_id.lt,
          },
       );
 
@@ -132,9 +132,9 @@ export class TonService {
             );
 
             await this.tonRepository.updateTonTransaction(message, {
-               quantity: Number(fromNano(data.in_msg?.value)),
                lt: data.transaction_id.lt,
                hash: data.transaction_id.hash,
+               quantity: Number(fromNano(data.in_msg?.value)),
                status: 'success',
             });
 

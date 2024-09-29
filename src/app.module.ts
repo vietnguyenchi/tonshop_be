@@ -15,7 +15,6 @@ import { ChainModule } from './chain/chain.module';
 import { BotModule } from './bot/bot.module';
 import { TransactionService } from './transaction/transaction.service';
 import { TonModule } from './ton/ton.module';
-import { WalletModule } from './wallet/wallet.module';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { JwtService } from '@nestjs/jwt';
 
@@ -28,7 +27,6 @@ import { JwtService } from '@nestjs/jwt';
       ChainModule,
       BotModule,
       TonModule,
-      WalletModule,
    ],
    controllers: [AppController],
    providers: [AppService, ChainService, TransactionService, JwtService],

@@ -85,20 +85,6 @@ enum StatusChain {
   maintenance
 }
 
-model Wallet {
-  id         String       @id @default(uuid())
-  name       String       @unique
-  privateKey String
-  status     StatusWallet @default(disabled)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-}
-
-enum StatusWallet {
-  active
-  disabled
-}
-
 model TransactionTon {
   id       String    @id @default(uuid())
   lt_start String?

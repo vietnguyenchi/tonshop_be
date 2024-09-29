@@ -4,12 +4,21 @@ import { IsString, IsEnum } from 'class-validator';
 import { StatusChain } from '@prisma/client';
 
 export class UpdateChainDto extends PartialType(CreateChainDto) {
-  @IsString()
-  name: string;
+   @IsString()
+   name?: string;
 
-  @IsString()
-  value: string;
+   @IsString()
+   symbol?: string;
 
-  @IsEnum(StatusChain)
-  status: StatusChain;
+   @IsString()
+   network?: string;
+
+   @IsString()
+   rpcUrl?: string;
+
+   @IsString()
+   apiKey?: string;
+
+   @IsEnum(StatusChain)
+   status?: StatusChain;
 }

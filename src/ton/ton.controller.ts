@@ -14,7 +14,7 @@ export class TonController {
 
    @Post('send')
    async createTransaction(@Body() createTransactionDto: TransferTonDto) {
-      return this.tonService.sendTransaction(
+      return this.tonService.transferTON(
          createTransactionDto.walletAddress,
          createTransactionDto.quantity,
          createTransactionDto.chainId,

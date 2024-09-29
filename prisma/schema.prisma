@@ -71,9 +71,10 @@ enum Status {
 model Chain {
   id        String      @id @default(uuid())
   name      String      @unique
-  value     String
+  symbol    String
   rpcUrl    String
-  apiKey    String?
+  apiKey    String
+  network   String
   status    StatusChain @default(active)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt

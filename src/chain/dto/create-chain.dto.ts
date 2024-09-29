@@ -6,7 +6,10 @@ export class CreateChainDto {
    name: string;
 
    @IsString()
-   value: string;
+   symbol: string;
+
+   @IsString()
+   network: string;
 
    @IsEnum(StatusChain)
    status: StatusChain;

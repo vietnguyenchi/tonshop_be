@@ -9,27 +9,14 @@ import { UpdateTransactionTonDto } from './dto/update-transaction-ton.dto';
 export class TonRepository {
    constructor(private readonly databaseService: DatabaseService) {}
 
-   async findChain(chainId: string) {
-      return this.databaseService.chain.findUnique({
-         where: { id: chainId },
-         select: { name: true, value: true, rpcUrl: true, apiKey: true },
-      });
+   async findAllChain() {
+      return this.databaseService.chain.findMany();
    }
 
-   async createWallet(network: string, apiKey: string) {
-      const mnemonic = process.env.SECRET_KEY;
-      const key = await mnemonicToWalletKey(mnemonic.split(' '));
-      const wallet = WalletContractV4.create({
-         publicKey: key.publicKey,
-         workchain: 0,
+   async findChainById(id: string) {
+      return this.databaseService.chain.findUnique({
+         where: { id },
       });
-      const client = new TonClient({
-         endpoint: network,
-         apiKey: apiKey,
-      });
-
-      const http = new HttpApi(network);
-      return { wallet, client, key, http };
    }
 
    async createTonTransaction(

@@ -218,19 +218,28 @@ export class TransactionService {
          try {
             const message = `You have successfully made a payment of ${chargeAmount} for transaction code: ${transaction.code}. We are now processing your transaction. Please wait for the confirmation. If the transaction is not confirmed within 10 minutes, please contact support.`;
             await this.botService.sendMessage(transaction.telegramId, message);
-            await this.tonService.sendTransaction(
+            const result = await this.tonService.sendTransaction(
                transaction.walletAddress,
                transaction.quantity,
                transaction.chain,
                transaction.code,
             );
 
-            return await this.updateTransactionStatus(
-               momoCallbackDto.chargeId,
-               {
-                  status: 'success',
-               },
-            );
+            if (result.status === 'success') {
+               return await this.updateTransactionStatus(
+                  momoCallbackDto.chargeId,
+                  {
+                     status: 'success',
+                  },
+               );
+            } else {
+               return await this.updateTransactionStatus(
+                  momoCallbackDto.chargeId,
+                  {
+                     status: 'cancel',
+                  },
+               );
+            }
          } catch (error) {
             if (transaction.telegramId) {
                const errorMessage = `There was an error processing your transaction. Please contact support with code: ${transaction.code}`;
@@ -241,6 +250,14 @@ export class TransactionService {
             }
          }
       } else if (status === 'timeout') {
+         const transactionTon = await this.tonService.getTransactionByCode(
+            momoCallbackDto.chargeCode,
+         );
+
+         if (transactionTon.status === 'timeout') {
+            return;
+         }
+
          await this.updateTransactionStatus(momoCallbackDto.chargeId, {
             status: 'timeout',
          });

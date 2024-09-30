@@ -314,6 +314,11 @@ export class TonService implements OnModuleInit {
          },
       );
 
+      let result = {
+         message: 'Transaction failed',
+         status: 'failed',
+      };
+
       await Promise.all(
          transactions.map(async (transaction) => {
             if (transaction.in_msg.message.includes(message)) {
@@ -323,12 +328,15 @@ export class TonService implements OnModuleInit {
                   quantity: Number(fromNano(transaction.in_msg.value)),
                   status: 'success',
                });
-               return { message: 'Transaction sent', status: 'success' };
+               result = {
+                  message: 'Transaction sent',
+                  status: 'success',
+               };
             }
          }),
       );
 
-      return { message: 'Transaction failed', status: 'failed' };
+      return result;
    }
 
    private getNetworkResources(network: string) {

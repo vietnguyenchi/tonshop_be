@@ -196,6 +196,44 @@ export class TransactionService {
       }
    }
 
+   async searchTransactionByCode(code: string) {
+      if (!code) {
+         return this.findAllTransactions();
+      }
+
+      return this.databaseService.transaction.findMany({
+         where: {
+            code: {
+               contains: code,
+            },
+         },
+         orderBy: { createAt: 'desc' },
+         take: 5,
+      });
+   }
+
+   async searchTransactionByCodeAndTelegramId(
+      code: string,
+      telegramId: string,
+   ) {
+      if (!code) {
+         return this.findAllTransactionsByTelegramId(telegramId);
+      }
+
+      const transactions = await this.databaseService.transaction.findMany({
+         where: {
+            code: {
+               contains: code,
+            },
+            telegramId: telegramId,
+         },
+         orderBy: { createAt: 'desc' },
+         take: 10,
+      });
+
+      return transactions;
+   }
+
    async handleMomoCallback(momoCallbackDto: MomoCallbackDto) {
       const { chargeId, chargeAmount, regAmount, status } = momoCallbackDto;
       await this.updateTransactionStatus(chargeId, { status: 'success' });
@@ -226,6 +264,11 @@ export class TransactionService {
             );
 
             if (result.status === 'success') {
+               const message = `Your transaction code: ${transaction.code} has been confirmed. Thank you for using our service.`;
+               await this.botService.sendMessage(
+                  transaction.telegramId,
+                  message,
+               );
                return await this.updateTransactionStatus(
                   momoCallbackDto.chargeId,
                   {
@@ -267,6 +310,14 @@ export class TransactionService {
 
          return null;
       } else {
+         const transactionTon = await this.tonService.getTransactionByCode(
+            momoCallbackDto.chargeCode,
+         );
+
+         if (transactionTon.status === 'success') {
+            return;
+         }
+
          await this.updateTransactionStatus(momoCallbackDto.chargeId, {
             status: 'success',
          });

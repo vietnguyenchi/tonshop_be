@@ -1,3 +1,4 @@
+import { TonRepository } from './ton.repository';
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { TonService } from './ton.service';
 import { TransferTonDto } from './dto/transfer-ton.dto';
@@ -10,7 +11,10 @@ import { Roles } from 'src/auth/roles.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
 export class TonController {
-   constructor(private readonly tonService: TonService) {}
+   constructor(
+      private readonly tonService: TonService,
+      private readonly tonRepository: TonRepository,
+   ) {}
 
    @Post('send')
    async createTransaction(@Body() createTransactionDto: TransferTonDto) {
@@ -39,5 +43,10 @@ export class TonController {
       @Query('limit') limit: number,
    ) {
       return this.tonService.getAllTransactions(page, limit);
+   }
+
+   @Get('search')
+   async searchTransactionByCode(@Query('code') code: string) {
+      return this.tonRepository.searchTransactionByCode(code);
    }
 }

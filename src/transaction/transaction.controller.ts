@@ -64,6 +64,26 @@ export class TransactionController {
       }
    }
 
+   @Get('search')
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   @Roles('admin')
+   async searchTransactionByCode(@Query('code') code: string) {
+      return await this.transactionService.searchTransactionByCode(code);
+   }
+
+   @Get('search/:telegramId')
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   @Roles('admin', 'user')
+   async searchTransactionByCodeAndTelegramId(
+      @Param('telegramId') telegramId: string,
+      @Query('code') code: string,
+   ) {
+      return await this.transactionService.searchTransactionByCodeAndTelegramId(
+         code,
+         telegramId,
+      );
+   }
+
    @Get('momo_callback')
    @UseGuards()
    async handleMomoCallback(

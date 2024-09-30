@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
-import { HttpApi, TonClient, WalletContractV4 } from '@ton/ton';
-import { mnemonicToWalletKey } from '@ton/crypto';
 import { Prisma } from '@prisma/client';
 import { UpdateTransactionTonDto } from './dto/update-transaction-ton.dto';
 
@@ -77,6 +75,14 @@ export class TonRepository {
    async getTransactionByCode(code: string) {
       return this.databaseService.transactionTon.findUnique({
          where: { code },
+      });
+   }
+
+   async searchTransactionByCode(code: string) {
+      return this.databaseService.transactionTon.findMany({
+         where: { code: { contains: code } },
+         orderBy: { lt: 'desc' },
+         take: 5,
       });
    }
 }

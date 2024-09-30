@@ -159,55 +159,55 @@ export class TonService implements OnModuleInit {
       return new Promise((resolve) => setTimeout(resolve, ms));
    }
 
-   private async transferEVM(
-      recipientAddress: string,
-      amount: number,
-      rpcUrl: string,
-   ): Promise<{ message: string; status: string }> {
-      const provider = new JsonRpcProvider(rpcUrl);
-      const wallet = Wallet.fromPhrase(process.env.WALLET_MNEMONIC, provider);
+   // private async transferEVM(
+   //    recipientAddress: string,
+   //    amount: number,
+   //    rpcUrl: string,
+   // ): Promise<{ message: string; status: string }> {
+   //    const provider = new JsonRpcProvider(rpcUrl);
+   //    const wallet = Wallet.fromPhrase(process.env.WALLET_MNEMONIC, provider);
 
-      const tx = await wallet.sendTransaction({
-         to: recipientAddress,
-         value: ethers.parseEther(amount.toString()),
-      });
+   //    const tx = await wallet.sendTransaction({
+   //       to: recipientAddress,
+   //       value: ethers.parseEther(amount.toString()),
+   //    });
 
-      await tx.wait();
+   //    await tx.wait();
 
-      return { message: 'Transaction sent', status: 'success' };
-   }
+   //    return { message: 'Transaction sent', status: 'success' };
+   // }
 
-   async transferERC20(
-      recipientAddress: string,
-      amount: number,
-      chain: string,
-      tokenAddress: string,
-   ): Promise<{ message: string; status: string }> {
-      const mnemonic = process.env.WALLET_MNEMONIC;
-      if (!mnemonic) {
-         throw new Error('Wallet mnemonic not found in environment variables');
-      }
+   // async transferERC20(
+   //    recipientAddress: string,
+   //    amount: number,
+   //    chain: string,
+   //    tokenAddress: string,
+   // ): Promise<{ message: string; status: string }> {
+   //    const mnemonic = process.env.WALLET_MNEMONIC;
+   //    if (!mnemonic) {
+   //       throw new Error('Wallet mnemonic not found in environment variables');
+   //    }
 
-      const chainData = await this.tonRepository.findChainById(chain);
+   //    const chainData = await this.tonRepository.findChainById(chain);
 
-      const rpcUrl = chainData?.rpcUrl;
-      const provider = new JsonRpcProvider(rpcUrl);
-      const wallet = Wallet.fromPhrase(mnemonic, provider);
+   //    const rpcUrl = chainData?.rpcUrl;
+   //    const provider = new JsonRpcProvider(rpcUrl);
+   //    const wallet = Wallet.fromPhrase(mnemonic, provider);
 
-      const tokenContract = new ethers.Contract(
-         tokenAddress,
-         ['function transfer(address to, uint256 amount) returns (bool)'],
-         wallet,
-      );
+   //    const tokenContract = new ethers.Contract(
+   //       tokenAddress,
+   //       ['function transfer(address to, uint256 amount) returns (bool)'],
+   //       wallet,
+   //    );
 
-      const tx = await tokenContract.transfer(
-         recipientAddress,
-         ethers.parseUnits(amount.toString(), 18),
-      );
-      await tx.wait();
+   //    const tx = await tokenContract.transfer(
+   //       recipientAddress,
+   //       ethers.parseUnits(amount.toString(), 18),
+   //    );
+   //    await tx.wait();
 
-      return { message: 'Transaction sent', status: 'success' };
-   }
+   //    return { message: 'Transaction sent', status: 'success' };
+   // }
 
    async estimateGas(
       recipientAddress: string,

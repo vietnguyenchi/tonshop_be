@@ -200,6 +200,14 @@ export class TransactionService {
       const { chargeId, chargeAmount, regAmount, status } = momoCallbackDto;
       await this.updateTransactionStatus(chargeId, { status: 'success' });
 
+      const transactionTon = await this.tonService.getTransactionByCode(
+         momoCallbackDto.chargeCode,
+      );
+
+      if (transactionTon) {
+         return;
+      }
+
       const transaction = await this.databaseService.transaction.findUnique({
          where: { chargeId: momoCallbackDto.chargeId },
       });

@@ -69,6 +69,7 @@ export class TransactionController {
    async handleMomoCallback(
       @Query(ValidationPipe) momoCallbackDto: MomoCallbackDto,
    ) {
+      console.log(momoCallbackDto);
       try {
          const transaction =
             await this.transactionService.handleMomoCallback(momoCallbackDto);

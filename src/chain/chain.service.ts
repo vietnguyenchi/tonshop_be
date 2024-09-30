@@ -2,13 +2,12 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateChainDto } from './dto/create-chain.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { UpdateChainDto } from './dto/update-chain.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ChainService {
    constructor(private readonly databaseService: DatabaseService) {}
 
-   async createChain(createChainDto: Prisma.ChainCreateInput) {
+   async createChain(createChainDto: CreateChainDto) {
       try {
          return this.databaseService.chain.create({
             data: createChainDto,

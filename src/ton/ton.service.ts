@@ -30,10 +30,16 @@ export class TonService implements OnModuleInit {
       const networks = await this.tonRepository.findAllChain();
 
       networks.forEach((network) => {
-         if (network.symbol === 'TON' && network.network === 'mainnet') {
+         if (
+            network.symbol.toLowerCase() === 'ton' &&
+            network.network === 'mainnet'
+         ) {
             this.endpointMainnet = network.rpcUrl;
             this.apiKeyMainnet = network.apiKey;
-         } else if (network.symbol === 'TON' && network.network === 'testnet') {
+         } else if (
+            network.symbol.toLowerCase() === 'ton' &&
+            network.network === 'testnet'
+         ) {
             this.endpointTestnet = network.rpcUrl;
             this.apiKeyTestnet = network.apiKey;
          }
@@ -219,18 +225,15 @@ export class TonService implements OnModuleInit {
       let contract: OpenedContract<WalletContractV4>;
       let client: TonClient;
       let key: Buffer;
-      let wallet: WalletContractV4;
 
       if (network.network === 'mainnet') {
          contract = this.contractMainnet;
          client = this.clientMainnet;
          key = this.secretKey;
-         wallet = this.walletMainnet;
       } else {
          contract = this.contractTestnet;
          client = this.clientTestnet;
          key = this.secretKey;
-         wallet = this.walletTestnet;
       }
 
       const seqno = await contract.getSeqno();
@@ -336,5 +339,9 @@ export class TonService implements OnModuleInit {
 
    async getAllTransactions(page: number, limit: number) {
       return this.tonRepository.getAllTransaction(page, limit);
+   }
+
+   async getTransactionByCode(code: string) {
+      return this.tonRepository.getTransactionByCode(code);
    }
 }
